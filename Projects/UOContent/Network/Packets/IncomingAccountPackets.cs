@@ -79,12 +79,158 @@ public static class IncomingAccountPackets
         IncomingPackets.Register(0x5D, &PlayCharacter, 73, outgameOnly: true);
         IncomingPackets.Register(0x80, &AccountLogin, 62, outgameOnly: true);
         IncomingPackets.Register(0x83, &DeleteCharacter, 39, outgameOnly: true);
+        IncomingPackets.Register(0x8D, &EnhancedCreateCharacter, outgameOnly: true);
         IncomingPackets.Register(0x91, &GameLogin, 65, outgameOnly: true);
         IncomingPackets.Register(0xA0, &PlayServer, 3, outgameOnly: true);
         IncomingPackets.Register(0xBD, &ClientVersion);
         IncomingPackets.Register(0xE1, &ClientType);
         IncomingPackets.Register(0xEF, &LoginServerSeed, 21, outgameOnly: true);
         IncomingPackets.Register(0xF8, &CreateCharacter, 106, outgameOnly: true);
+    }
+
+    /// <summary>
+    /// Character creation as the Enhanced Client sends it (packet 0x8D, variable length).
+    /// </summary>
+    /// <remarks>
+    /// The layout, how it was measured and where it contradicts the published packet table are in
+    /// <c>docs/EC_PROTOCOL.md</c>. The appearance arrives as records carrying real <see cref="Layer" /> values,
+    /// not as the flat run of hair and shirt fields other emulators parse positionally. With a profession
+    /// selected the stats and skills on the wire are placeholders and the profession template decides them, as
+    /// on the Classic path.
+    /// </remarks>
+    public static void EnhancedCreateCharacter(NetState state, SpanReader reader)
+    {
+        // 0xEDEDEDED, then the character slot, which is not needed: the creation path picks the free slot
+        // itself, as it does for the Classic packets.
+        reader.Seek(8, SeekOrigin.Current);
+
+        var name = reader.ReadLatin1Safe(30);
+
+        // Where the Classic packet carries a password. This client writes "Unknown" and the server has already
+        // authenticated the account, so it is not read.
+        reader.Seek(30, SeekOrigin.Current);
+
+        int profession = reader.ReadByte();
+
+        // Starting city. Other emulators disagree about this byte, half of them reading client flags; picking
+        // Britain moved it from 0 to 1 while nothing else in the packet changed. There are no flags here, so
+        // state.Flags stays as PlayCharacter leaves it.
+        int cityIndex = reader.ReadByte();
+
+        var female = reader.ReadByte() != 0;
+        int raceId = reader.ReadByte();
+
+        byte[] stats = [reader.ReadByte(), reader.ReadByte(), reader.ReadByte()];
+        int hue = reader.ReadUInt16();
+
+        // Zero in every capture.
+        reader.Seek(8, SeekOrigin.Current);
+
+        // Four pairs are always present; the event takes three or four depending on the client's own flag.
+        Span<byte> skillIds = stackalloc byte[4];
+        Span<byte> skillValues = stackalloc byte[4];
+        for (var i = 0; i < 4; i++)
+        {
+            skillIds[i] = reader.ReadByte();
+            skillValues[i] = reader.ReadByte();
+        }
+
+        var skills = new (SkillName, byte)[state.NewCharacterCreation ? 4 : 3];
+        for (var i = 0; i < skills.Length; i++)
+        {
+            skills[i] = ((SkillName)skillIds[i], skillValues[i]);
+        }
+
+        // Zero in every capture.
+        reader.Seek(25, SeekOrigin.Current);
+
+        int hairHue = 0, hairGraphic = 0, facialHairHue = 0, facialHairGraphic = 0;
+        while (reader.Remaining >= 5)
+        {
+            int layer = reader.ReadByte();
+            int layerHue = reader.ReadUInt16();
+            int layerGraphic = reader.ReadUInt16();
+
+            switch (layer)
+            {
+                case (int)Layer.Hair:
+                    {
+                        hairHue = layerHue;
+                        hairGraphic = layerGraphic;
+                        break;
+                    }
+                case (int)Layer.FacialHair:
+                    {
+                        facialHairHue = layerHue;
+                        facialHairGraphic = layerGraphic;
+                        break;
+                    }
+            }
+        }
+
+        // 1 is human, 2 elf, matching the captures; Race.Races is zero based.
+        var race = raceId > 0 ? Race.Races[raceId - 1] ?? Race.DefaultRace : Race.DefaultRace;
+
+        var info = state.CityInfo;
+        var account = state.Account;
+
+        if (info == null || account == null || cityIndex >= info.Length)
+        {
+            state.Disconnect("Invalid city selected during character creation.");
+            return;
+        }
+
+        // Check if anyone is using this account
+        for (var i = 0; i < account.Length; ++i)
+        {
+            var check = account[i];
+
+            if (check != null && check.Map != Map.Internal)
+            {
+                state.LogInfo("Account in use");
+                state.SendPopupMessage(PMMessage.CharInWorld);
+                return;
+            }
+        }
+
+        var args = new CharacterCreatedEventArgs(
+            state,
+            account,
+            name,
+            female,
+            hue,
+            stats,
+            info[cityIndex],
+            skills,
+            0,
+            0,
+            hairGraphic,
+            hairHue,
+            facialHairGraphic,
+            facialHairHue,
+            profession,
+            race
+        );
+
+        state.SendClientVersionRequest();
+
+        state.BlockAllPackets = true;
+
+        CharacterCreation.CharacterCreatedEvent(args);
+
+        var m = args.Mobile;
+
+        if (m != null)
+        {
+            state.Mobile = m;
+            m.NetState = state;
+            new LoginTimer(state, m).Start();
+        }
+        else
+        {
+            state.BlockAllPackets = false;
+            state.Disconnect("Character creation blocked.");
+        }
     }
 
     public static void CreateCharacter(NetState state, SpanReader reader)
