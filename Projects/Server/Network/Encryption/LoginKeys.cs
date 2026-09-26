@@ -63,7 +63,13 @@ public readonly struct LoginKeys
             return keys;
         }
 
-        keys = ComputeKeys((uint)version.Major, (uint)version.Minor, (uint)version.Revision);
+        // The client derives its key from the version it puts on the wire. An Enhanced Client sends major 67 and
+        // ClientVersion stores that normalised to 7 (ToStringImpl prints Major + 60 back), so deriving from the
+        // stored major makes the two keystreams disagree in fixed bands: an account name survives 17 characters
+        // and a password seven, and the three bytes TryDecryptWithKeys validates all fall in a clean band.
+        // Correct only while ClientVersion normalises SA and leaves KR, whose wire major 66 is stored as is.
+        var major = version.Type == ClientType.SA ? (uint)version.Major + 60 : (uint)version.Major;
+        keys = ComputeKeys(major, (uint)version.Minor, (uint)version.Revision);
         _cache[version] = keys;
         return keys;
     }
