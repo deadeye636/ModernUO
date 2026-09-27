@@ -31,7 +31,9 @@ description: >
 - Expression-bodied overrides: `public override int Meat { get { return 1; } }` -> `public override int Meat => 1;`
 - AI movement calls lose the `run` flag: `MoveTo(m, true, range)` -> `MoveTo(m, range)` (also `WalkMobileRange`, `ApproachTarget`, `MoveToPoint`, `PathFollower.Follow`); the Running bit is derived from step pace -> `dev-docs/runuo-migration-docs/09-items-mobiles-creatures.md` § AI Movement
 - `AcquireOnApproach` (bool) -> `AcquireOnApproachDelay` (TimeSpan; `Zero` = old instant behavior) -> same doc § Target Acquisition
+- `BaseAI.OnAggressiveAction(aggressor)` is `bool`, not `void`: the AI owns the retaliation policy (`BaseCreature` no longer sets `Combatant` after it); an early `return;` that refused a fight -> `return false;`, otherwise `return true;`; swap-only overrides call `PreferCloserAggressor(aggressor)` instead of `base` -> same doc § Retaliation
 - `DamageEntries` is an inline `ref readonly ValueLinkList<DamageEntry>`, not a `List`: indexer/`Add`/`Remove`/`Clear` -> `foreach` / `.ByDescending()` (needs `using Server.Collections;`) and `ClearDamageEntries()`; `GetLootingRights` takes it by `in` -> same doc § Damage Entries
+- `ControlMaster`/`SummonMaster` are views of one `Master`, gated by `Controlled`/`Summoned`; assignments still compile (they set `Master`). `ControlMaster ?? SummonMaster` and controlled-or-summoned pairs -> `GetMaster()`; a creature that sets `SummonMaster` without `Summoned` (RunUO's `BaseEnraged`) must read `Master`, because `SummonMaster` now reads null -> same doc § Masters
 
 ## Anti-Patterns
 - Using `_field--` instead of `Property--` (bypasses MarkDirty tracking)

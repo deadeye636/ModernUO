@@ -228,14 +228,9 @@ namespace Server.Misc
             }
 
             if (bcTarg?.Controlled == true
-                || bcTarg?.Summoned == true && bcTarg.SummonMaster != from && bcTarg.SummonMaster?.Player == true)
+                || bcTarg?.SummonMaster is { Player: true } summoner && summoner != from)
             {
                 return false; // Cannot harm other controlled mobiles from players
-            }
-
-            if (pmFrom == null && bcFrom != null && bcFrom.Summoned && target.Player)
-            {
-                return true; // Summons from monsters can attack players
             }
 
             if (target.Player)
@@ -275,7 +270,24 @@ namespace Server.Misc
                 return Notoriety.CanBeAttacked;
             }
 
-            Body body = target.Amount;
+            // BaseCreatures are deleted on death, so target.Owner is null after a server restart.
+            // The OwnerWasBaseCreature flag is the persisted snapshot that survives the live mobile.
+            var creature = target.Owner as BaseCreature;
+            var ownerWasCreature = target.OwnerWasBaseCreature || creature != null;
+
+            // A player's murderer and criminal status outrank guild standing, as on the live mobile.
+            if (!ownerWasCreature)
+            {
+                if (target.Murderer)
+                {
+                    return Notoriety.Murderer;
+                }
+
+                if (target.Criminal && (target.Map?.Rules & MapRules.HarmfulRestrictions) == 0)
+                {
+                    return Notoriety.Criminal;
+                }
+            }
 
             var sourceGuild = GetGuildFor(source.Guild as Guild, source);
             var targetGuild = GetGuildFor(target.Guild, target.Owner);
@@ -297,11 +309,7 @@ namespace Server.Misc
                 }
             }
 
-            // BaseCreatures are deleted on death, so target.Owner is null after a server restart.
-            // The OwnerWasBaseCreature flag is the persisted snapshot that survives the live mobile.
-            var creature = target.Owner as BaseCreature;
-
-            if (target.OwnerWasBaseCreature || creature != null)
+            if (ownerWasCreature)
             {
                 if (srcFaction != null && trgFaction != null && srcFaction != trgFaction && source.Map == Faction.Facet)
                 {
@@ -314,6 +322,7 @@ namespace Server.Misc
                 }
 
                 var actual = Notoriety.CanBeAttacked;
+                Body body = target.Amount;
 
                 if (target.Murderer || body.IsMonster && target.OwnerWasSummoned || target.OwnerWasAnimatedDead)
                 {
@@ -336,16 +345,6 @@ namespace Server.Misc
                 }
 
                 return Notoriety.Innocent;
-            }
-
-            if (target.Murderer || body.IsMonster)
-            {
-                return Notoriety.Murderer;
-            }
-
-            if (target.Criminal && (target.Map?.Rules & MapRules.HarmfulRestrictions) == 0)
-            {
-                return Notoriety.Criminal;
             }
 
             if (srcFaction != null && trgFaction != null && srcFaction != trgFaction && source.Map == Faction.Facet)
@@ -422,7 +421,7 @@ namespace Server.Misc
                     return Notoriety.CanBeAttacked;
                 }
 
-                master = bcTarg.ControlMaster;
+                master = bcTarg.Controlled ? bcTarg.ControlMaster : null;
 
                 if (Core.ML && master != null)
                 {

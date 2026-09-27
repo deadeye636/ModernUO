@@ -182,22 +182,35 @@ public class BaseCreatureSerializationTests : IDisposable
         Assert.Equal(master, copy.LastOwner);
     }
 
-    [Fact]
-    public void UncontrolledSummon_KeepsItsSummonMaster()
+    // One serialized master; the Controlled and Summoned flags decide which views expose it.
+    [Theory]
+    [InlineData(true, false)]  // controlled pet
+    [InlineData(true, true)]   // controlled summon
+    [InlineData(false, true)]  // energy vortex: summoned, never controlled
+    [InlineData(false, false)] // EnragedCreature: a summon master without Summoned
+    public void MasterShapes_RoundTrip(bool controlled, bool summoned)
     {
         var bc = NewCreature();
         var master = NewMaster();
 
-        // Energy vortex-style: summoned with a master, never controlled.
-        bc.Summoned = true;
-        bc.SummonMaster = master;
+        bc.Summoned = summoned;
+
+        if (controlled)
+        {
+            bc.SetControlMaster(master);
+        }
+        else
+        {
+            bc.Master = master;
+        }
 
         var copy = Load(Snapshot(bc));
 
-        Assert.True(copy.Summoned);
-        Assert.False(copy.Controlled);
-        Assert.Equal(master, copy.SummonMaster);
-        Assert.Null(copy.ControlMaster);
+        Assert.Equal(controlled, copy.Controlled);
+        Assert.Equal(summoned, copy.Summoned);
+        Assert.Equal(master, copy.Master);
+        Assert.Equal(controlled ? master : null, copy.ControlMaster);
+        Assert.Equal(summoned ? master : null, copy.SummonMaster);
     }
 
     [Fact]
@@ -418,8 +431,8 @@ public class BaseCreatureSerializationTests : IDisposable
         Assert.Equal(0.6, copy.CurrentMoveSpeed); // passive mode, inheriting
     }
 
-    // ControlMaster and SummonMaster are independent references: a summon master can
-    // exist without Summoned (EnragedCreature), and a controlled summon carries both.
+    // A master survives without Summoned (EnragedCreature), and a controlled summon reports the
+    // same mobile as both.
     [Theory]
     [InlineData(true, true, false, false)]  // controlled pet
     [InlineData(true, true, true, true)]    // controlled summon, SummonEnd on the wire
@@ -445,11 +458,87 @@ public class BaseCreatureSerializationTests : IDisposable
         Assert.Equal(controlled, copy.Controlled);
         Assert.Equal(summoned, copy.Summoned);
         Assert.Equal(hasControlMaster ? master : null, copy.ControlMaster);
-        Assert.Equal(hasSummonMaster ? master : null, copy.SummonMaster);
+        Assert.Equal(master, copy.Master);
+        Assert.Equal(summoned ? master : null, copy.SummonMaster);
 
         if (summoned)
         {
             Assert.InRange(copy.SummonEndValue, summonEnd - TimeSpan.FromSeconds(1), summonEnd + TimeSpan.FromSeconds(1));
         }
+    }
+
+    // Before summon ownership followed transfers, a traded summon kept its caster as summon master.
+    [Fact]
+    public void LegacyV22Stream_DifferingMasters_OwnerWins()
+    {
+        var owner = NewMaster();
+        var caster = NewMaster();
+
+        var copy = LoadLegacyV22(true, owner, true, caster, Core.Now + TimeSpan.FromMinutes(5));
+
+        Assert.Equal(owner, copy.ControlMaster);
+        Assert.Equal(owner, copy.SummonMaster);
+    }
+
+    // v23 bit positions: every save-flagged field in schema order (DefaultAI is not flagged).
+    private const int V23Controlled = 13;
+    private const int V23ControlMaster = 14;
+    private const int V23Summoned = 20;
+    private const int V23SummonEnd = 21;
+    private const int V23SummonMaster = 22;
+    private const int V23RemoveStep = 50;
+    private const int V23CorpseNameOverride = 52;
+
+    // v23 wrote the owner and the summoner to separate slots; v24 keeps one master.
+    [Fact]
+    public void V23Stream_MigratesToOneMaster_AndDefaultsAbsentFields()
+    {
+        var owner = NewMaster();
+        var caster = NewMaster();
+        var summonEnd = Core.Now + TimeSpan.FromMinutes(5);
+
+        var donor = new MobileStub();
+        donor.DefaultMobileInit();
+        _created.Add(donor);
+
+        var writer = new BufferWriter(true);
+        donor.Serialize(writer);
+
+        writer.Write(23); // version
+        writer.Write(
+            1UL << V23Controlled | 1UL << V23ControlMaster | 1UL << V23Summoned | 1UL << V23SummonEnd |
+            1UL << V23SummonMaster | 1UL << V23RemoveStep | 1UL << V23CorpseNameOverride
+        );
+        writer.WriteEncodedInt((int)AIType.AI_Melee); // DefaultAI
+        writer.Write(owner);                          // ControlMaster
+        writer.WriteAnchoredTime(summonEnd);          // SummonEnd
+        writer.Write(caster);                         // SummonMaster
+        writer.WriteEncodedInt(3);                    // RemoveStep
+        writer.Write("a migrated corpse");            // CorpseNameOverride
+
+        var buffer = new byte[writer.Position];
+        writer.Buffer.AsSpan(0, (int)writer.Position).CopyTo(buffer);
+
+        var copy = Load(buffer);
+
+        Assert.True(copy.Controlled);
+        Assert.True(copy.Summoned);
+        Assert.Equal(owner, copy.ControlMaster);
+        Assert.Equal(owner, copy.SummonMaster);
+        Assert.InRange(copy.SummonEndValue, summonEnd - TimeSpan.FromSeconds(1), summonEnd + TimeSpan.FromSeconds(1));
+        Assert.Equal(3, copy.RemoveStep);
+        Assert.Equal("a migrated corpse", copy.CorpseNameOverride);
+
+        // Absent fields take the class defaults, not default(T).
+        Assert.Equal(AIType.AI_Melee, copy.AI);
+        Assert.Equal(-1, copy.HitsMaxSeed);
+        Assert.Equal(1, copy.ControlSlots);
+        Assert.Equal(BaseCreature.MaxLoyalty, copy.Loyalty);
+        Assert.Equal(100, copy.PhysicalDamage);
+        Assert.Equal(10, copy.RangeHome);
+        Assert.Equal(FightMode.Closest, copy.FightMode);
+        Assert.Equal(0.3, copy.ActiveSpeed);
+        Assert.Equal(0.6, copy.PassiveSpeed);
+        Assert.NotNull(copy.Owners);
     }
 }

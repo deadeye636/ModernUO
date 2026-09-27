@@ -231,6 +231,9 @@ class — `OnThink` is for content extras (see the excess-call contract below). 
 creature is dispatched through `Obey()`, an uncontrolled one through `Think()`; an AI that owns
 both routes them into one decision (`FamiliarAI.Act`). Overriding `IssueOrder` to return a
 fixed order is how "command immunity" is expressed without bypassing the order machinery.
+`OnAggressiveAction(aggressor) -> bool` is the retaliation policy: `BaseCreature` sets no
+combatant of its own and runs `StopFlee`/`ForceReacquire` only on `true`, so an AI that
+returns `false` has refused the fight outright.
 
 ### Fight Modes
 | FightMode | Behavior |
@@ -262,6 +265,37 @@ public override bool Unprovokable => true;                // Cannot be provoked
 public override bool CanFly => true;                      // Can fly
 public override int TreasureMapLevel => 3;               // Drops treasure map
 public override double WeaponAbilityChance => 0.4;        // Weapon ability chance
+```
+
+### Masters: owner, summoner, responsible party
+
+A creature stores one master. Read it through the view that matches the question:
+
+| Read | Returns | Use it for |
+|---|---|---|
+| `ControlMaster` | the master while `Controlled`, else null | the owner: commands, bonding, friends, stabling |
+| `SummonMaster` | the master while `Summoned`, else null | the summoner: dispel, summon acquire rules |
+| `GetMaster()` | `ControlMaster ?? SummonMaster` | whoever answers for the creature: notoriety, kill credit, guild and party checks |
+| `Master` | the stored reference, flags ignored | a creature's own AI following or defending a master it has no flag for |
+
+A master with neither flag is legal. A meer mage's enraged creatures carry their meer in `Master`
+without being `Controlled` or `Summoned`, so `GetMaster()` is null and the meer never answers for them.
+
+To set a master, tame through `SetControlMaster(m)` (it raises `Controlled`, resets the order and
+checks follower slots) and summon through `BaseCreature.Summon(...)`. Assign `Master` directly only
+for a master with no flag. The `ControlMaster` and `SummonMaster` setters are aliases for `Master`:
+they don't set `Controlled` or `Summoned`, so the value reads back as null until the flag is set.
+Every assignment moves the creature's follower slots from the old master to the new one.
+
+The view already checks its flag, so don't repeat it:
+
+```csharp
+// Redundant: ControlMaster is null unless Controlled
+if (Controlled && ControlMaster == from) { ... }
+if (ControlMaster == from) { ... }
+
+// Not equivalent: without the flag this is true for every wild creature
+if (Controlled && ControlMaster != from) { ... }
 ```
 
 ### Creature Speeds (think vs move clocks)

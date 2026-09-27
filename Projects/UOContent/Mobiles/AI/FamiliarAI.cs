@@ -47,21 +47,25 @@ public class FamiliarAI : BaseAI
         return Mobile.Controlled ? OrderType.Come : OrderType.None;
     }
 
-    public override void OnAggressiveAction(Mobile aggressor)
+    // No orders to stand down on; never fights for a hidden caster.
+    public override bool OnAggressiveAction(Mobile aggressor)
     {
         if (!Familiar.AssistsMaster || aggressor.Hidden || Familiar.ControlMaster?.Hidden == true)
         {
-            return;
+            return false;
         }
 
         if (Mobile.Combatant == null)
         {
             Mobile.Warmode = true;
             Mobile.Combatant = aggressor;
-            return;
+        }
+        else
+        {
+            PreferCloserAggressor(aggressor);
         }
 
-        base.OnAggressiveAction(aggressor);
+        return true;
     }
 
     private bool Act()
@@ -148,7 +152,7 @@ public class FamiliarAI : BaseAI
         var combatant = target.Combatant;
 
         return combatant == Mobile || combatant == master ||
-               combatant is BaseCreature { Controlled: true } pet && pet.ControlMaster == master;
+               combatant is BaseCreature pet && pet.ControlMaster == master;
     }
 
     // Closest mobile in a fight with the caster's side.

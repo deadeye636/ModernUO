@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using ModernUO.CodeGeneratedEvents;
 using ModernUO.Serialization;
 using Server.Collections;
 using Server.ContextMenus;
@@ -135,7 +134,7 @@ namespace Server.Mobiles
         public int CompareTo(DamageStore ds) => (ds?.m_Damage ?? 0).CompareTo(m_Damage);
     }
 
-    [SerializationGenerator(23, false)]
+    [SerializationGenerator(24, false)]
     public abstract partial class BaseCreature : Mobile, IHonorTarget, IQuestGiver
     {
         private static readonly ILogger logger = LogFactory.GetLogger(typeof(BaseCreature));
@@ -446,10 +445,10 @@ namespace Server.Mobiles
             InvalidateProperties();
         }
 
-        // Follower bookkeeping brackets the assignment, so the property is hand-written.
-        private Mobile _controlMaster;
+        // Follower bookkeeping brackets the assignment, so Master is hand-written.
+        private Mobile _master;
 
-        private bool ShouldSerializeControlMaster() => _controlMaster != null;
+        private bool ShouldSerializeMaster() => _master != null;
 
         [SerializableField(16)]
         [SaveFlag(nameof(ShouldSerializeControlTarget))]
@@ -503,13 +502,8 @@ namespace Server.Mobiles
 
         private bool ShouldSerializeSummonEnd() => _summoned;
 
-        // Follower bookkeeping brackets the assignment, so the property is hand-written.
-        private Mobile _summonMaster;
-
-        private bool ShouldSerializeSummonMaster() => _summonMaster != null;
-
         [EncodedInt]
-        [SerializableField(24)]
+        [SerializableField(23)]
         [SaveFlag(nameof(ShouldSerializeControlSlots), nameof(ControlSlotsDefaultValue))]
         [SerializedCommandProperty(AccessLevel.Administrator)]
         private int _controlSlots = 1;
@@ -519,7 +513,7 @@ namespace Server.Mobiles
         private int ControlSlotsDefaultValue() => 1;
 
         [EncodedInt]
-        [SerializableField(25, allowFieldChange: nameof(ClampLoyalty))]
+        [SerializableField(24, allowFieldChange: nameof(ClampLoyalty))]
         [SaveFlag(nameof(ShouldSerializeLoyalty), nameof(LoyaltyDefaultValue))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private int _loyalty;
@@ -534,7 +528,7 @@ namespace Server.Mobiles
             return true;
         }
 
-        [SerializableField(26)]
+        [SerializableField(25)]
         [SaveFlag(nameof(ShouldSerializeCurrentWayPoint))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private WayPoint _currentWayPoint;
@@ -542,7 +536,7 @@ namespace Server.Mobiles
         private bool ShouldSerializeCurrentWayPoint() => _currentWayPoint != null;
 
         [EncodedInt]
-        [SerializableField(27)]
+        [SerializableField(26)]
         [SaveFlag(nameof(ShouldSerializeHitsMaxSeed), nameof(HitsMaxSeedDefaultValue))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private int _hitsMaxSeed = -1;
@@ -552,7 +546,7 @@ namespace Server.Mobiles
         private int HitsMaxSeedDefaultValue() => -1;
 
         [EncodedInt]
-        [SerializableField(28)]
+        [SerializableField(27)]
         [SaveFlag(nameof(ShouldSerializeStamMaxSeed), nameof(StamMaxSeedDefaultValue))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private int _stamMaxSeed = -1;
@@ -562,7 +556,7 @@ namespace Server.Mobiles
         private int StamMaxSeedDefaultValue() => -1;
 
         [EncodedInt]
-        [SerializableField(29)]
+        [SerializableField(28)]
         [SaveFlag(nameof(ShouldSerializeManaMaxSeed), nameof(ManaMaxSeedDefaultValue))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private int _manaMaxSeed = -1;
@@ -572,7 +566,7 @@ namespace Server.Mobiles
         private int ManaMaxSeedDefaultValue() => -1;
 
         [EncodedInt]
-        [SerializableField(30)]
+        [SerializableField(29)]
         [SaveFlag(nameof(ShouldSerializeDamageMin), nameof(DamageMinDefaultValue))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private int _damageMin = -1;
@@ -582,7 +576,7 @@ namespace Server.Mobiles
         private int DamageMinDefaultValue() => -1;
 
         [EncodedInt]
-        [SerializableField(31)]
+        [SerializableField(30)]
         [SaveFlag(nameof(ShouldSerializeDamageMax), nameof(DamageMaxDefaultValue))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private int _damageMax = -1;
@@ -592,7 +586,7 @@ namespace Server.Mobiles
         private int DamageMaxDefaultValue() => -1;
 
         [EncodedInt]
-        [SerializableField(32, fieldChanged: nameof(OnResistanceSeedChange))]
+        [SerializableField(31, fieldChanged: nameof(OnResistanceSeedChange))]
         [SaveFlag(nameof(ShouldSerializePhysicalResistanceSeed))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private int _physicalResistanceSeed;
@@ -602,7 +596,7 @@ namespace Server.Mobiles
         private void OnResistanceSeedChange(int oldValue, int newValue) => UpdateResistances();
 
         [EncodedInt]
-        [SerializableField(33, fieldChanged: nameof(OnResistanceSeedChange))]
+        [SerializableField(32, fieldChanged: nameof(OnResistanceSeedChange))]
         [SaveFlag(nameof(ShouldSerializeFireResistSeed))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private int _fireResistSeed;
@@ -610,7 +604,7 @@ namespace Server.Mobiles
         private bool ShouldSerializeFireResistSeed() => _fireResistSeed != 0;
 
         [EncodedInt]
-        [SerializableField(34, fieldChanged: nameof(OnResistanceSeedChange))]
+        [SerializableField(33, fieldChanged: nameof(OnResistanceSeedChange))]
         [SaveFlag(nameof(ShouldSerializeColdResistSeed))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private int _coldResistSeed;
@@ -618,7 +612,7 @@ namespace Server.Mobiles
         private bool ShouldSerializeColdResistSeed() => _coldResistSeed != 0;
 
         [EncodedInt]
-        [SerializableField(35, fieldChanged: nameof(OnResistanceSeedChange))]
+        [SerializableField(34, fieldChanged: nameof(OnResistanceSeedChange))]
         [SaveFlag(nameof(ShouldSerializePoisonResistSeed))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private int _poisonResistSeed;
@@ -626,7 +620,7 @@ namespace Server.Mobiles
         private bool ShouldSerializePoisonResistSeed() => _poisonResistSeed != 0;
 
         [EncodedInt]
-        [SerializableField(36, fieldChanged: nameof(OnResistanceSeedChange))]
+        [SerializableField(35, fieldChanged: nameof(OnResistanceSeedChange))]
         [SaveFlag(nameof(ShouldSerializeEnergyResistSeed))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private int _energyResistSeed;
@@ -634,7 +628,7 @@ namespace Server.Mobiles
         private bool ShouldSerializeEnergyResistSeed() => _energyResistSeed != 0;
 
         [EncodedInt]
-        [SerializableField(37)]
+        [SerializableField(36)]
         [SaveFlag(nameof(ShouldSerializePhysicalDamage), nameof(PhysicalDamageDefaultValue))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private int _physicalDamage = 100;
@@ -644,7 +638,7 @@ namespace Server.Mobiles
         private int PhysicalDamageDefaultValue() => 100;
 
         [EncodedInt]
-        [SerializableField(38)]
+        [SerializableField(37)]
         [SaveFlag(nameof(ShouldSerializeFireDamage))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private int _fireDamage;
@@ -652,7 +646,7 @@ namespace Server.Mobiles
         private bool ShouldSerializeFireDamage() => _fireDamage != 0;
 
         [EncodedInt]
-        [SerializableField(39)]
+        [SerializableField(38)]
         [SaveFlag(nameof(ShouldSerializeColdDamage))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private int _coldDamage;
@@ -660,7 +654,7 @@ namespace Server.Mobiles
         private bool ShouldSerializeColdDamage() => _coldDamage != 0;
 
         [EncodedInt]
-        [SerializableField(40)]
+        [SerializableField(39)]
         [SaveFlag(nameof(ShouldSerializePoisonDamage))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private int _poisonDamage;
@@ -668,7 +662,7 @@ namespace Server.Mobiles
         private bool ShouldSerializePoisonDamage() => _poisonDamage != 0;
 
         [EncodedInt]
-        [SerializableField(41)]
+        [SerializableField(40)]
         [SaveFlag(nameof(ShouldSerializeEnergyDamage))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private int _energyDamage;
@@ -676,7 +670,7 @@ namespace Server.Mobiles
         private bool ShouldSerializeEnergyDamage() => _energyDamage != 0;
 
         [Tidy]
-        [SerializableField(42, setter: "private")]
+        [SerializableField(41, setter: "private")]
         [SaveFlag(nameof(ShouldSerializeOwners), nameof(OwnersDefaultValue))]
         private List<Mobile> _owners;
 
@@ -688,13 +682,13 @@ namespace Server.Mobiles
 
         private List<Mobile> OwnersDefaultValue() => new();
 
-        [SerializableField(43)]
+        [SerializableField(42)]
         [SaveFlag(nameof(ShouldSerializeIsDeadPet))]
         private bool _isDeadPet;
 
         private bool ShouldSerializeIsDeadPet() => _isDeadPet;
 
-        [SerializableField(44, fieldChanged: nameof(OnBondedChange))]
+        [SerializableField(43, fieldChanged: nameof(OnBondedChange))]
         [SaveFlag(nameof(ShouldSerializeIsBonded))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private bool _isBonded;
@@ -703,21 +697,21 @@ namespace Server.Mobiles
 
         private void OnBondedChange(bool oldValue, bool newValue) => InvalidateProperties();
 
-        [SerializableField(45)]
+        [SerializableField(44)]
         [SaveFlag(nameof(ShouldSerializeBondingBegin))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private DateTime _bondingBegin;
 
         private bool ShouldSerializeBondingBegin() => _bondingBegin != DateTime.MinValue;
 
-        [SerializableField(46)]
+        [SerializableField(45)]
         [SaveFlag(nameof(ShouldSerializeOwnerAbandonTime))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private DateTime _ownerAbandonTime;
 
         private bool ShouldSerializeOwnerAbandonTime() => _ownerAbandonTime != DateTime.MinValue;
 
-        [SerializableField(47)]
+        [SerializableField(46)]
         [SaveFlag(nameof(ShouldSerializeHasGeneratedLoot))]
         private bool _hasGeneratedLoot;
 
@@ -729,7 +723,7 @@ namespace Server.Mobiles
         private bool ShouldSerializeIsParagon() => _isParagon;
 
         [Tidy]
-        [SerializableField(49, setter: "private")]
+        [SerializableField(48, setter: "private")]
         [SaveFlag(nameof(ShouldSerializeFriends))]
         private List<Mobile> _friends;
 
@@ -739,7 +733,7 @@ namespace Server.Mobiles
             return _friends?.Count > 0;
         }
 
-        [SerializableField(50)]
+        [SerializableField(49)]
         [SaveFlag(nameof(ShouldSerializeRemoveIfUntamed))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private bool _removeIfUntamed;
@@ -747,21 +741,21 @@ namespace Server.Mobiles
         private bool ShouldSerializeRemoveIfUntamed() => _removeIfUntamed;
 
         [EncodedInt]
-        [SerializableField(51)]
+        [SerializableField(50)]
         [SaveFlag(nameof(ShouldSerializeRemoveStep))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private int _removeStep;
 
         private bool ShouldSerializeRemoveStep() => _removeStep != 0;
 
-        [SerializableField(52, setter: "private")]
+        [SerializableField(51, setter: "private")]
         [SaveFlag(nameof(ShouldSerializePendingDeleteTimer))]
         [DeserializeTimer(nameof(DeserializePendingDeleteTimer))]
         private Timer _pendingDeleteTimer;
 
         // Stabled and controlled pets never resume a delete countdown.
         private bool ShouldSerializePendingDeleteTimer() =>
-            _pendingDeleteTimer?.Running == true && !IsStabled && !(_controlled && _controlMaster != null);
+            _pendingDeleteTimer?.Running == true && !IsStabled && ControlMaster == null;
 
         private void DeserializePendingDeleteTimer(TimeSpan delay)
         {
@@ -769,7 +763,7 @@ namespace Server.Mobiles
             _pendingDeleteTimer.Start();
         }
 
-        [SerializableField(53)]
+        [SerializableField(52)]
         [SaveFlag(nameof(ShouldSerializeCorpseNameOverride))]
         [SerializedCommandProperty(AccessLevel.GameMaster)]
         private string _corpseNameOverride;
@@ -847,7 +841,6 @@ namespace Server.Mobiles
             Debug = false;
 
             _controlled = false;
-            _controlMaster = null;
             ControlTarget = null;
             _controlOrder = OrderType.None;
 
@@ -920,6 +913,10 @@ namespace Server.Mobiles
         [CommandProperty(AccessLevel.GameMaster)]
         public bool IsPrisoner { get; set; }
 
+        /// <summary>
+        /// When false, a summon may target its own caster and anyone the caster's harmful spells would spare.
+        /// It still prefers any other target over the caster.
+        /// </summary>
         public virtual bool FollowsAcquireRules => true;
 
         public virtual Faction FactionAllegiance => null;
@@ -927,7 +924,7 @@ namespace Server.Mobiles
 
         public virtual double WeaponAbilityChance => 0.4;
 
-        [SerializableProperty(48, useField: nameof(_isParagon))]
+        [SerializableProperty(47, useField: nameof(_isParagon))]
         [SaveFlag(nameof(ShouldSerializeIsParagon))]
         [CommandProperty(AccessLevel.GameMaster)]
         public bool IsParagon
@@ -1024,8 +1021,8 @@ namespace Server.Mobiles
         }
 
         public virtual bool IsNecroFamiliar =>
-            Summoned && _controlMaster != null &&
-            SummonFamiliarSpell.Table.TryGetValue(_controlMaster, out var bc) && bc == this;
+            Summoned && ControlMaster != null &&
+            SummonFamiliarSpell.Table.TryGetValue(ControlMaster, out var bc) && bc == this;
 
         public virtual bool DeleteCorpseOnDeath => !Core.AOS && _summoned;
 
@@ -1153,23 +1150,26 @@ namespace Server.Mobiles
             }
         }
 
-        [SerializableProperty(15, useField: nameof(_controlMaster))]
-        [SaveFlag(nameof(ShouldSerializeControlMaster))]
+        // Whoever this creature answers to. ControlMaster, SummonMaster and GetMaster() gate it by
+        // Controlled and Summoned; an enraged creature has a master with neither flag.
+        [SerializableProperty(15, useField: nameof(_master))]
+        [SaveFlag(nameof(ShouldSerializeMaster))]
         [CommandProperty(AccessLevel.GameMaster)]
-        public Mobile ControlMaster
+        public Mobile Master
         {
-            get => _controlMaster;
+            get => _master;
             set
             {
-                if (_controlMaster == value || this == value)
+                if (_master == value || this == value)
                 {
                     return;
                 }
 
                 RemoveFollowers();
-                _controlMaster = value;
+                _master = value;
                 AddFollowers();
-                if (_controlMaster != null)
+
+                if (value != null)
                 {
                     StopDeleteTimer();
                 }
@@ -1179,26 +1179,20 @@ namespace Server.Mobiles
             }
         }
 
-        [SerializableProperty(23, useField: nameof(_summonMaster))]
-        [SaveFlag(nameof(ShouldSerializeSummonMaster))]
+        /// <summary>The owner. Setting it sets <see cref="Master"/>.</summary>
+        [CommandProperty(AccessLevel.GameMaster)]
+        public Mobile ControlMaster
+        {
+            get => _controlled ? _master : null;
+            set => Master = value;
+        }
+
+        /// <summary>The summoner, controlled or not. Setting it sets <see cref="Master"/>.</summary>
         [CommandProperty(AccessLevel.GameMaster)]
         public Mobile SummonMaster
         {
-            get => _summonMaster;
-            set
-            {
-                if (_summonMaster == value || this == value)
-                {
-                    return;
-                }
-
-                RemoveFollowers();
-                _summonMaster = value;
-                AddFollowers();
-
-                Delta(MobileDelta.Noto);
-                this.MarkDirty();
-            }
+            get => _summoned ? _master : null;
+            set => Master = value;
         }
 
         // Fires on every assignment, not only changes: a reissued order is a command (retarget, re-anchor).
@@ -1267,7 +1261,7 @@ namespace Server.Mobiles
             }
 
             InvalidateProperties();
-            _controlMaster?.InvalidateProperties();
+            ControlMaster?.InvalidateProperties();
             this.MarkDirty();
         }
 
@@ -2191,9 +2185,75 @@ namespace Server.Mobiles
             }
         }
 
+        // Absent fields resolve through the same default-value methods the live reader uses.
+        private void MigrateFrom(V23Content content)
+        {
+            _defaultAI = content.DefaultAI;
+            _currentAI = content.CurrentAI ?? CurrentAIDefaultValue();
+            _rangePerception = content.RangePerception ?? RangePerceptionDefaultValue();
+            _rangeFight = content.RangeFight ?? RangeFightDefaultValue();
+            _rangeHome = content.RangeHome ?? RangeHomeDefaultValue();
+            _team = content.Team ?? 0;
+            _fightMode = content.FightMode ?? FightModeDefaultValue();
+            _activeSpeed = content.ActiveSpeed ?? ActiveSpeedDefaultValue();
+            _passiveSpeed = content.PassiveSpeed ?? PassiveSpeedDefaultValue();
+            _currentSpeed = content.CurrentSpeed ?? CurrentSpeedDefaultValue();
+            _activeMoveSpeed = content.ActiveMoveSpeed ?? ActiveMoveSpeedDefaultValue();
+            _passiveMoveSpeed = content.PassiveMoveSpeed ?? PassiveMoveSpeedDefaultValue();
+            _home = content.Home ?? Point3D.Zero;
+            _homeMap = content.HomeMap;
+            _controlled = content.Controlled;
+            // A traded summon could still carry its caster as summon master; the owner wins.
+            _master = content.ControlMaster ?? content.SummonMaster;
+            _controlTarget = content.ControlTarget;
+            _controlDest = content.ControlDest ?? Point3D.Zero;
+            _controlOrder = content.ControlOrder ?? OrderType.None;
+            _minTameSkill = content.MinTameSkill ?? 0;
+            _tamable = content.Tamable;
+            _summoned = content.Summoned;
+            _summonEnd = content.SummonEnd ?? DateTime.MinValue;
+            _controlSlots = content.ControlSlots ?? ControlSlotsDefaultValue();
+            _loyalty = content.Loyalty ?? LoyaltyDefaultValue();
+            _currentWayPoint = content.CurrentWayPoint;
+            _hitsMaxSeed = content.HitsMaxSeed ?? HitsMaxSeedDefaultValue();
+            _stamMaxSeed = content.StamMaxSeed ?? StamMaxSeedDefaultValue();
+            _manaMaxSeed = content.ManaMaxSeed ?? ManaMaxSeedDefaultValue();
+            _damageMin = content.DamageMin ?? DamageMinDefaultValue();
+            _damageMax = content.DamageMax ?? DamageMaxDefaultValue();
+            _physicalResistanceSeed = content.PhysicalResistanceSeed ?? 0;
+            _fireResistSeed = content.FireResistSeed ?? 0;
+            _coldResistSeed = content.ColdResistSeed ?? 0;
+            _poisonResistSeed = content.PoisonResistSeed ?? 0;
+            _energyResistSeed = content.EnergyResistSeed ?? 0;
+            _physicalDamage = content.PhysicalDamage ?? PhysicalDamageDefaultValue();
+            _fireDamage = content.FireDamage ?? 0;
+            _coldDamage = content.ColdDamage ?? 0;
+            _poisonDamage = content.PoisonDamage ?? 0;
+            _energyDamage = content.EnergyDamage ?? 0;
+            _owners = content.Owners ?? OwnersDefaultValue();
+            _isDeadPet = content.IsDeadPet;
+            _isBonded = content.IsBonded;
+            _bondingBegin = content.BondingBegin ?? DateTime.MinValue;
+            _ownerAbandonTime = content.OwnerAbandonTime ?? DateTime.MinValue;
+            _hasGeneratedLoot = content.HasGeneratedLoot;
+            _isParagon = content.IsParagon;
+            _friends = content.Friends;
+            _removeIfUntamed = content.RemoveIfUntamed;
+            _removeStep = content.RemoveStep ?? 0;
+
+            if (content.PendingDeleteTimerDelay != TimeSpan.MinValue)
+            {
+                DeserializePendingDeleteTimer(content.PendingDeleteTimerDelay);
+            }
+
+            _corpseNameOverride = content.CorpseNameOverride;
+        }
+
         // Pre-codegen loads only (versions 0-22); post-codegen bumps use MigrateFrom.
         private void Deserialize(IGenericReader reader, int version)
         {
+            Mobile controlMaster = null;
+
             _currentAI = (AIType)reader.ReadInt();
             _defaultAI = (AIType)reader.ReadInt();
 
@@ -2241,7 +2301,7 @@ namespace Server.Mobiles
                 _fightMode = (FightMode)reader.ReadInt();
 
                 _controlled = reader.ReadBool();
-                _controlMaster = reader.ReadEntity<Mobile>();
+                controlMaster = reader.ReadEntity<Mobile>();
                 _controlTarget = reader.ReadEntity<Mobile>();
                 _controlDest = reader.ReadPoint3D();
                 _controlOrder = (OrderType)reader.ReadInt();
@@ -2269,7 +2329,6 @@ namespace Server.Mobiles
                 _fightMode = FightMode.Closest;
 
                 _controlled = false;
-                _controlMaster = null;
                 _controlTarget = null;
                 _controlOrder = OrderType.None;
             }
@@ -2290,8 +2349,11 @@ namespace Server.Mobiles
 
             if (version >= 5)
             {
-                _summonMaster = reader.ReadEntity<Mobile>();
+                _master = reader.ReadEntity<Mobile>();
             }
+
+            // A transferred summon kept its caster as summon master; the owner wins.
+            _master = controlMaster ?? _master;
 
             if (version >= 6)
             {
@@ -2453,7 +2515,7 @@ namespace Server.Mobiles
 
             if (IsAnimatedDead)
             {
-                AnimateDeadSpell.Register(_summonMaster, this);
+                AnimateDeadSpell.Register(SummonMaster, this);
             }
         }
 
@@ -2562,7 +2624,7 @@ namespace Server.Mobiles
 
         public void RemoveFollowers()
         {
-            var master = _controlMaster ?? _summonMaster;
+            var master = _master;
             if (master != null)
             {
                 master.Followers -= Math.Min(ControlSlots, master.Followers);
@@ -2576,7 +2638,7 @@ namespace Server.Mobiles
 
         public void AddFollowers()
         {
-            var master = _controlMaster ?? _summonMaster;
+            var master = _master;
             if (master != null)
             {
                 master.Followers += ControlSlots;
@@ -2655,16 +2717,6 @@ namespace Server.Mobiles
 
             FocusMob = null;
 
-            if (IsAnimatedDead)
-            {
-                AnimateDeadSpell.Unregister(_summonMaster, this);
-            }
-
-            if (Summoned && SummonMaster != null)
-            {
-                SummonFamiliarSpell.Unregister(SummonMaster, this);
-            }
-
             if (MLQuestSystem.Enabled)
             {
                 MLQuestSystem.HandleDeletion(this);
@@ -2735,17 +2787,11 @@ namespace Server.Mobiles
                 aggressor.Aggressors.Add(AggressorInfo.Create(this, aggressor, true));
             }
 
-            var toldToStandDown = _controlled && _controlMaster != null && Commandable &&
-                                  BaseAI.IsStandDownOrder(_controlOrder);
-
-            if (StandsDownOnCommand && toldToStandDown)
+            // The AI owns the retaliation policy; a creature that stands down keeps its flee and acquire state.
+            if (AIObject?.OnAggressiveAction(aggressor) != true)
             {
-                AIObject?.DebugSay("I'm being attacked but my master told me not to fight.");
-                Warmode = false;
                 return;
             }
-
-            AIObject?.OnAggressiveAction(aggressor);
 
             StopFlee();
 
@@ -2759,17 +2805,6 @@ namespace Server.Mobiles
                 {
                     pl.FinishShield();
                 }
-            }
-
-            // Only reachable when the pet does not stand down: the orders above returned early.
-            if (aggressor.ChangingCombatant && toldToStandDown)
-            {
-                IssueOrder(OrderType.Attack, null, aggressor);
-            }
-            else if (Combatant == null && !BardPacified)
-            {
-                Warmode = true;
-                Combatant = aggressor;
             }
         }
 
@@ -2855,7 +2890,7 @@ namespace Server.Mobiles
         }
 
         public override bool IsHarmfulCriminal(Mobile target) =>
-            (!Controlled || target != _controlMaster) && (!Summoned || target != _summonMaster) &&
+            target != GetMaster() &&
             (target is not BaseCreature { InitialInnocent: true } creature || creature.Controlled) &&
             (target is not PlayerMobile mobile || mobile.PermaFlags.Count <= 0) && base.IsHarmfulCriminal(target);
 
@@ -2863,16 +2898,9 @@ namespace Server.Mobiles
         {
             base.CriminalAction(message);
 
-            if (Controlled || Summoned)
+            if (GetMaster() is { Player: true } master)
             {
-                if (_controlMaster?.Player == true)
-                {
-                    _controlMaster.CriminalAction(false);
-                }
-                else if (_summonMaster?.Player == true)
-                {
-                    _summonMaster.CriminalAction(false);
-                }
+                master.CriminalAction(false);
             }
         }
 
@@ -2880,7 +2908,7 @@ namespace Server.Mobiles
         {
             base.DoHarmful(target, indirect);
 
-            if (target == this || target == _controlMaster || target == _summonMaster || !Controlled && !Summoned)
+            if (target == this || GetMaster() is not { } owner || target == owner)
             {
                 return;
             }
@@ -3301,20 +3329,8 @@ namespace Server.Mobiles
             return bonus;
         }
 
-        public Mobile GetMaster()
-        {
-            if (Controlled && ControlMaster != null)
-            {
-                return ControlMaster;
-            }
-
-            if (Summoned && SummonMaster != null)
-            {
-                return SummonMaster;
-            }
-
-            return null;
-        }
+        // Who answers for this creature: its owner or its summoner. Never an enraged creature's meer.
+        public Mobile GetMaster() => ControlMaster ?? SummonMaster;
 
         public virtual bool IsMonster => !Controlled || (GetMaster() as BaseCreature)?.IsMonster == true;
 
@@ -3657,14 +3673,45 @@ namespace Server.Mobiles
         {
             CreatureEvents.CreatureDeletedEvent(this);
 
-            var m = _controlMaster;
+            // Both registries are keyed by the master, which is cleared below.
+            if (IsAnimatedDead)
+            {
+                AnimateDeadSpell.Unregister(SummonMaster, this);
+            }
+
+            if (SummonMaster != null)
+            {
+                SummonFamiliarSpell.Unregister(SummonMaster, this);
+            }
+
+            var m = ControlMaster;
             SetControlMaster(null);
 
-            SummonMaster = null;
+            Master = null;
             ReceivedHonorContext?.Cancel();
 
             base.OnDelete();
             m?.InvalidateProperties();
+        }
+
+        // A guard never fights its master or the master's other pets. An explicit Attack order and bard
+        // provocation still may.
+        public bool RefusesGuardTarget(Mobile target) =>
+            _controlled && _controlOrder == OrderType.Guard && !BardProvoked && AIObject?.IsGuardAlly(target) == true;
+
+        // Mobile.AggressiveAction assigns the first aggressor as Combatant before any retaliation policy runs.
+        public override Mobile Combatant
+        {
+            get => base.Combatant;
+            set
+            {
+                if (value != null && RefusesGuardTarget(value))
+                {
+                    return;
+                }
+
+                base.Combatant = value;
+            }
         }
 
         public override bool CanBeHarmful(Mobile target, bool message, bool ignoreOurBlessedness)
@@ -3695,14 +3742,19 @@ namespace Server.Mobiles
         }
 
         public override bool CanBeRenamedBy(Mobile from) =>
-            Controlled && from == ControlMaster && !from.Region.IsPartOf<JailRegion>() ||
+            from == ControlMaster && !from.Region.IsPartOf<JailRegion>() ||
             base.CanBeRenamedBy(from);
 
         public bool SetControlMaster(Mobile m)
         {
             if (m == null)
             {
-                ControlMaster = null;
+                // An uncontrolled summon keeps its caster.
+                if (_controlled)
+                {
+                    Master = null;
+                }
+
                 Controlled = false;
                 ControlTarget = null;
                 ControlOrder = OrderType.None;
@@ -3725,7 +3777,7 @@ namespace Server.Mobiles
 
                 Home = Point3D.Zero;
 
-                ControlMaster = m;
+                Master = m;
                 Controlled = true;
                 ControlTarget = null;
                 ControlOrder = OrderType.Come;
@@ -3787,7 +3839,7 @@ namespace Server.Mobiles
 
             creature.RangeHome = 10;
             creature.Summoned = true;
-            creature.SummonMaster = caster;
+            creature.Master = caster;
 
             var pack = creature.Backpack;
 
@@ -3944,14 +3996,11 @@ namespace Server.Mobiles
                 return BardMaster;
             }
 
-            if (_controlled && _controlMaster != null)
-            {
-                return _controlMaster;
-            }
+            var master = GetMaster();
 
-            if (_summoned && _summonMaster != null)
+            if (master != null)
             {
-                return _summonMaster;
+                return master;
             }
 
             return base.GetDamageMaster(damagee);
@@ -4297,16 +4346,27 @@ namespace Server.Mobiles
 
         public virtual void AddPetFriend(Mobile m)
         {
+            if (IsPetFriend(m))
+            {
+                return;
+            }
+
             Friends ??= [];
-            Friends.Add(m);
-            this.MarkDirty();
+            AddToFriends(m);
         }
 
         public virtual void RemovePetFriend(Mobile m)
         {
-            if (Friends?.Remove(m) == true)
+            if (Friends == null)
             {
-                this.MarkDirty();
+                return;
+            }
+
+            RemoveFromFriends(m);
+
+            if (Friends.Count == 0)
+            {
+                Friends = null;
             }
         }
 
@@ -4531,7 +4591,7 @@ namespace Server.Mobiles
 
                 if (IsBondable && !IsBonded)
                 {
-                    var master = _controlMaster;
+                    var master = ControlMaster;
 
                     if (master != null && master == from) // So friends can't start the bonding process
                     {
