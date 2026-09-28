@@ -95,7 +95,7 @@ public static class OutgoingContainerPackets
                 writer.Write(0);                    // X, Y
                 if (ns.ContainerGridLines)
                 {
-                    writer.Write((byte)0); // Grid Location
+                    writer.Write((byte)0); // Grid Location: spellbook entries are virtual and take no cell
                 }
                 writer.Write(book);
                 writer.Write((short)0); // Quest Hue
@@ -158,7 +158,7 @@ public static class OutgoingContainerPackets
         writer.Write((short)item.Y);
         if (ns.ContainerGridLines)
         {
-            writer.Write((byte)0); // Grid Location?
+            writer.Write(item.GridSlot);
         }
         writer.Write(parentSerial);
         writer.Write((ushort)(item.QuestItem ? Item.QuestItemHue : item.Hue));
@@ -198,7 +198,7 @@ public static class OutgoingContainerPackets
                 writer.Write((short)loc.Y);
                 if (ns.ContainerGridLines)
                 {
-                    writer.Write((byte)0); // Grid Location?
+                    writer.Write(child.GridSlot);
                 }
                 writer.Write(beheld.Serial);
                 writer.Write((ushort)(child.QuestItem ? Item.QuestItemHue : child.Hue));

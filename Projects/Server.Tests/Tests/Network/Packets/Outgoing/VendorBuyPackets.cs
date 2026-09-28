@@ -23,7 +23,7 @@ public sealed class VendorBuyContent : Packet
             Stream.Write((short)1);       // y
             if (containerGridLines)
             {
-                Stream.Write((byte)0); // Grid Location?
+                Stream.Write(Item.NoGridSlot);
             }
             Stream.Write(bis.ContainerSerial);
             Stream.Write((ushort)bis.Hue);

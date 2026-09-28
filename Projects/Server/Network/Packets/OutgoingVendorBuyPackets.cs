@@ -46,7 +46,7 @@ public static class OutgoingVendorBuyPackets
             writer.Write((short)1);       // y
             if (ns.ContainerGridLines)
             {
-                writer.Write((byte)0); // Grid Location?
+                writer.Write(Item.NoGridSlot); // The EC's buy window orders by list position and ignores the grid
             }
             writer.Write(bis.ContainerSerial);
             writer.Write((ushort)bis.Hue);

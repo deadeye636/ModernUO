@@ -178,6 +178,151 @@ public partial class Container : Item
 
     public static int GlobalMaxWeight { get; set; } = 400;
 
+    /// <summary>Cells in the Enhanced Client's container grid (the bank shows more, but items beyond 125 use the list view).</summary>
+    public const int MaxGridSlots = 125;
+
+    /// <summary>Number of grid cells this container hands out: <c>min(MaxItems, 125)</c>, 125 when unlimited.</summary>
+    public int GridSize => MaxItems is > 0 and < MaxGridSlots ? MaxItems : MaxGridSlots;
+
+    /// <summary>
+    ///     Picks a cell for <paramref name="item" />: <paramref name="requested" /> if free, else <paramref name="last" />
+    ///     if free, else the lowest free cell, else <see cref="Item.NoGridSlot" />. Occupancy comes from the other
+    ///     children, so a cell is free again as soon as its item leaves by any path. Every child counts, including
+    ///     hidden and virtual ones: the cell must stay unique whoever looks, since each viewer is sent the same byte.
+    /// </summary>
+    public byte FindGridSlot(Item item, byte requested, byte last)
+    {
+        var size = GridSize;
+        Span<bool> taken = stackalloc bool[MaxGridSlots];
+        taken.Clear(); // SkipLocalsInit: stackalloc is not zeroed
+
+        var items = Items;
+        for (var i = 0; i < items.Count; i++)
+        {
+            var child = items[i];
+            if (child != item && child._gridSlot < size)
+            {
+                taken[child._gridSlot] = true;
+            }
+        }
+
+        if (requested < size && !taken[requested])
+        {
+            return requested;
+        }
+
+        if (last < size && !taken[last])
+        {
+            return last;
+        }
+
+        for (var i = 0; i < size; i++)
+        {
+            if (!taken[i])
+            {
+                return (byte)i;
+            }
+        }
+
+        return Item.NoGridSlot;
+    }
+
+    /// <summary>
+    ///     Gives every child without a valid cell (none, out of range, or sharing a cell with an earlier child) the lowest
+    ///     free cell, in <see cref="Item.Items" /> order. Children that no longer fit get <see cref="Item.NoGridSlot" />.
+    ///     Returns the number of children whose cell changed. Sends nothing; meant for the pass after world load.
+    /// </summary>
+    public int AssignGridSlots()
+    {
+        var items = Items;
+        if (items.Count == 0)
+        {
+            return 0;
+        }
+
+        var size = GridSize;
+        Span<bool> taken = stackalloc bool[MaxGridSlots];
+        taken.Clear(); // SkipLocalsInit: stackalloc is not zeroed
+        // Oversized GM containers can hold thousands of children; keep the stack bounded.
+        Span<bool> pending = items.Count <= 512 ? stackalloc bool[items.Count] : new bool[items.Count];
+        pending.Clear();
+        var pendingCount = 0;
+
+        for (var i = 0; i < items.Count; i++)
+        {
+            var slot = items[i]._gridSlot;
+
+            if (slot < size && !taken[slot])
+            {
+                taken[slot] = true;
+            }
+            else
+            {
+                pending[i] = true;
+                pendingCount++;
+            }
+        }
+
+        if (pendingCount == 0)
+        {
+            return 0;
+        }
+
+        var changed = 0;
+        var next = 0;
+
+        for (var i = 0; i < items.Count; i++)
+        {
+            if (!pending[i])
+            {
+                continue;
+            }
+
+            while (next < size && taken[next])
+            {
+                next++;
+            }
+
+            var child = items[i];
+            var slot = next < size ? (byte)next : Item.NoGridSlot;
+
+            if (slot != Item.NoGridSlot)
+            {
+                taken[next] = true;
+            }
+
+            if (child._gridSlot != slot)
+            {
+                child._gridSlot = slot;
+                changed++;
+            }
+        }
+
+        return changed;
+    }
+
+    public override void AddItem(Item item)
+    {
+        if (item?.Deleted != false || item.Parent == this || item == this)
+        {
+            base.AddItem(item);
+            return;
+        }
+
+        var previous = item._gridSlot;
+        var previousParent = item.Parent;
+        item._gridSlot = FindGridSlot(item, Item.NoGridSlot, previous);
+
+        base.AddItem(item);
+
+        // Rejected (adding a parent into its child): the item stays where it was, with its old cell. If a hook moved
+        // it on into another container, that container's cell stands.
+        if (item.Parent == previousParent && item.Parent != this)
+        {
+            item._gridSlot = previous;
+        }
+    }
+
     public virtual bool DisplaysContent => true;
 
     public List<Mobile> Openers { get; set; }

@@ -545,6 +545,12 @@ public partial class Mobile : IHued, IComparable<Mobile>, ISpawnable, IObjectPro
     [CommandProperty(AccessLevel.GameMaster)]
     public int AllowedStealthSteps { get; set; }
 
+    /// <summary>
+    ///     Transient: the grid cell an Enhanced Client picked in its drop request, consumed by the next
+    ///     <see cref="Drop(Item, Point3D)" />. Kept off the held item so a bounced drop keeps the item's own cell.
+    /// </summary>
+    public byte GridSlotRequest { get; set; } = Item.NoGridSlot;
+
     public Item Holding
     {
         get => m_Holding;
@@ -5130,7 +5136,8 @@ public partial class Mobile : IHued, IComparable<Mobile>, ISpawnable, IObjectPro
 
                             if (amount < oldAmount)
                             {
-                                LiftItemDupe(item, amount);
+                                // The lifted part leaves; the rest stays in the stack's grid cell.
+                                LiftItemDupe(item, amount)?.SwapGridSlot(item);
                             }
                         }
 
@@ -5232,6 +5239,11 @@ public partial class Mobile : IHued, IComparable<Mobile>, ISpawnable, IObjectPro
         }
     }
 
+    /// <summary>
+    ///     Splits <paramref name="amount" /> off into <paramref name="oldItem" /> and adds a new item with the rest next to
+    ///     it. In a container the original keeps its grid cell and the new item gets a free one; a caller that moves the
+    ///     original away and leaves the new item behind swaps them with <see cref="Item.SwapGridSlot" />.
+    /// </summary>
     public static T LiftItemDupe<T>(T oldItem, int amount) where T : Item
     {
         T item;
@@ -5336,6 +5348,8 @@ public partial class Mobile : IHued, IComparable<Mobile>, ISpawnable, IObjectPro
     {
         var from = this;
         var item = from.Holding;
+        var gridSlot = GridSlotRequest;
+        GridSlotRequest = Item.NoGridSlot;
 
         var valid = item != null && item.HeldBy == from && item.Map == Map.Internal;
 
@@ -5363,6 +5377,17 @@ public partial class Mobile : IHued, IComparable<Mobile>, ISpawnable, IObjectPro
 
         if (!bounced)
         {
+            // A drop onto an item names the cell of the grid around it, so the cell counts only when the item
+            // landed in the target container. A drop onto a bag's icon sends the bag as target plus the bag's own
+            // cell in the outer grid; that number says nothing about the bag's grid, so it is dropped. (A drop into
+            // the bag's open window at the same index falls back to the normal rule; the packet cannot tell them apart.)
+            // The setter keeps the assigned cell if the requested one is taken.
+            if (gridSlot != Item.NoGridSlot && !item.Deleted && item.Parent == to && to is Container
+                && !(to.Parent is Container && to.GridSlot == gridSlot))
+            {
+                item.GridSlot = gridSlot;
+            }
+
             SendDropEffect(item);
         }
 

@@ -179,7 +179,7 @@ public sealed class ContainerContentUpdate6017 : Packet
         Stream.Write((ushort)Math.Min(item.Amount, ushort.MaxValue));
         Stream.Write((short)item.X);
         Stream.Write((short)item.Y);
-        Stream.Write((byte)0); // Grid Location?
+        Stream.Write(item.GridSlot);
         Stream.Write(parentSerial);
         Stream.Write((ushort)(item.QuestItem ? Item.QuestItemHue : item.Hue));
     }
@@ -255,7 +255,7 @@ public sealed class ContainerContent6017 : Packet
                 Stream.Write((ushort)Math.Min(child.Amount, ushort.MaxValue));
                 Stream.Write((short)loc.X);
                 Stream.Write((short)loc.Y);
-                Stream.Write((byte)0); // Grid Location?
+                Stream.Write(child.GridSlot);
                 Stream.Write(beheld.Serial);
                 Stream.Write((ushort)(child.QuestItem ? Item.QuestItemHue : child.Hue));
 

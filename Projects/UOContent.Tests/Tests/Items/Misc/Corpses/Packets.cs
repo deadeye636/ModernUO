@@ -168,7 +168,7 @@ public sealed class CorpseContent6017 : Packet
                 Stream.Write((ushort)child.Amount);
                 Stream.Write((short)child.X);
                 Stream.Write((short)child.Y);
-                Stream.Write((byte)0); // Grid Location?
+                Stream.Write(child.GridSlot);
                 Stream.Write(beheld.Serial);
                 Stream.Write((ushort)child.Hue);
 
@@ -184,7 +184,7 @@ public sealed class CorpseContent6017 : Packet
             Stream.Write((ushort)1);
             Stream.Write((short)0);
             Stream.Write((short)0);
-            Stream.Write((byte)0); // Grid Location?
+            Stream.Write(Item.NoGridSlot);
             Stream.Write(beheld.Serial);
             Stream.Write((ushort)beheld.HairHue);
 
@@ -199,7 +199,7 @@ public sealed class CorpseContent6017 : Packet
             Stream.Write((ushort)1);
             Stream.Write((short)0);
             Stream.Write((short)0);
-            Stream.Write((byte)0); // Grid Location?
+            Stream.Write(Item.NoGridSlot);
             Stream.Write(beheld.Serial);
             Stream.Write((ushort)beheld.FacialHairHue);
 
