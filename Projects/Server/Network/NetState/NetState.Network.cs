@@ -80,6 +80,13 @@ public partial class NetState
     private const long AliveCheckIntervalMs = 5000;
     private static long _nextAliveCheck;
 
+    // Silence allowed before a connection is dropped. Clients whose keep-alive interval is longer
+    // than the default (some ping only every 60 s) need a larger value. The ceiling keeps
+    // tick + timeout far from overflow.
+    private const long DefaultInactivityTimeoutMs = 30000;
+    private const long MaxInactivityTimeoutMs = 3_600_000;
+    private static long _inactivityTimeoutMs = DefaultInactivityTimeoutMs;
+
     /// <summary>
     /// Gets the IORingGroup instance for socket operations.
     /// </summary>
@@ -136,6 +143,13 @@ public partial class NetState
 
         // Seed from a real tick; a zero default suppresses the sweep when ticks start negative
         _nextAliveCheck = Core.TickCount;
+
+        _inactivityTimeoutMs = CoerceInactivityTimeout(
+            ServerConfiguration.GetOrUpdateSetting(
+                "network.inactivityTimeout",
+                TimeSpan.FromMilliseconds(DefaultInactivityTimeoutMs)
+            )
+        );
 
         // Initialize IP rate limiter
         _ipRateLimiter = new IPRateLimiter(10, 10000, 1000, 2.0, 3_600_000, Core.ClosingTokenSource.Token);
@@ -359,6 +373,29 @@ public partial class NetState
         }
 
         return slabs;
+    }
+
+    /// <summary>
+    /// Clamps the inactivity timeout, in milliseconds, between one alive-check interval (shorter is
+    /// not observable) and the ceiling.
+    /// </summary>
+    internal static long CoerceInactivityTimeout(TimeSpan configured)
+    {
+        var configuredMs = configured.Ticks / TimeSpan.TicksPerMillisecond;
+        var timeoutMs = Math.Clamp(configuredMs, AliveCheckIntervalMs, MaxInactivityTimeoutMs);
+
+        if (timeoutMs != configuredMs)
+        {
+            logger.Warning(
+                "network.inactivityTimeout {Configured} is outside {Minimum}..{Maximum}; using {Adjusted}",
+                configured,
+                TimeSpan.FromMilliseconds(AliveCheckIntervalMs),
+                TimeSpan.FromMilliseconds(MaxInactivityTimeoutMs),
+                TimeSpan.FromMilliseconds(timeoutMs)
+            );
+        }
+
+        return timeoutMs;
     }
 
     /// <summary>
@@ -758,7 +795,7 @@ public partial class NetState
                         // Verify generation via object identity to avoid stale completion issues
                         if (nsRecv != null && nsRecv._socket == evt.Socket)
                         {
-                            nsRecv.NextActivityCheck = curTicks + 30000;
+                            nsRecv.NextActivityCheck = curTicks + _inactivityTimeoutMs;
                             HandleDataReceived(nsRecv, evt.BytesTransferred);
                         }
                         break;
@@ -771,7 +808,7 @@ public partial class NetState
                         if (nsSend != null && nsSend._socket == evt.Socket)
                         {
                             // Update activity check on successful send
-                            nsSend.NextActivityCheck = curTicks + 30000;
+                            nsSend.NextActivityCheck = curTicks + _inactivityTimeoutMs;
                             nsSend.TryShrinkSendBuffer(curTicks);
                         }
                         break;
