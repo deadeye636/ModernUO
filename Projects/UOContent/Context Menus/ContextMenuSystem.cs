@@ -146,7 +146,8 @@ public static class ContextMenuSystem
             return;
         }
 
-        var newCommand = ns.NewHaven && menu.RequiresNewPacket;
+        // The Enhanced Client only parses the cliloc-based format 2.
+        var newCommand = ns.IsEnhancedClient || (ns.NewHaven && menu.RequiresNewPacket);
 
         var entries = menu.Entries;
         var entriesLength = (byte)entries.Length;

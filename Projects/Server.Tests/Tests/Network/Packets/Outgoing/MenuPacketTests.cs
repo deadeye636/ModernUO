@@ -98,4 +98,27 @@ public class MenuPacketTests
         var result = ns.SendBuffer.GetReadSpan();
         AssertThat.Equal(result, expected);
     }
+
+    [Theory]
+    [InlineData("67.0.117", true)]
+    [InlineData("7.0.74.28", false)]
+    public void TestDisplayContextMenuFormatForClientType(string version, bool expectNewPacket)
+    {
+        var m = new Mobile((Serial)0x1);
+        m.DefaultMobileInit();
+
+        var item = new ContextMenuItem(World.NewItem, false);
+        var menu = ContextMenuSystem.CreateContextMenu(m, item);
+
+        var packet = expectNewPacket ? (Packet)new DisplayContextMenu(menu) : new DisplayContextMenuOld(menu);
+        var expected = packet.Compile();
+
+        using var ns = PacketTestUtilities.CreateTestNetState();
+        ns.Version = new ClientVersion(version);
+
+        ns.SendDisplayContextMenu(menu);
+
+        var result = ns.SendBuffer.GetReadSpan();
+        AssertThat.Equal(result, expected);
+    }
 }
