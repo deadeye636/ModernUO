@@ -130,7 +130,7 @@ public partial class NetState : IComparable<NetState>, IValueLinkListNode<NetSta
         Address = address;
 
         Seeded = false;
-        NextActivityCheck = Core.TickCount + 30000;
+        NextActivityCheck = Core.TickCount + _inactivityTimeoutMs;
         ConnectedOn = Core.Now;
         _toString = address?.ToString() ?? "(error)";
 
