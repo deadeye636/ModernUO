@@ -76,7 +76,7 @@ public static class ContextMenuSystem
             return;
         }
 
-        int index = reader.ReadUInt16();
+        var index = GetEntryIndex(state, menu, reader.ReadUInt16());
 
         if (index >= menu.Entries.Length)
         {
@@ -97,6 +97,77 @@ public static class ContextMenuSystem
             e.OnClick(from, entity);
         }
     }
+
+    /// <summary>
+    ///     Resolves the index a client answered a context menu with to an entry index.
+    ///     The Enhanced Client's shortcut buttons (target window, health bar, player actions, double-click on a
+    ///     banker or vendor) request the menu hidden and answer with a fixed action code instead of the entry index.
+    /// </summary>
+    /// <returns>The entry index, or <paramref name="index" /> unchanged when it is not such an action code.</returns>
+    public static int GetEntryIndex(NetState state, ContextMenu menu, int index)
+    {
+        if (index < menu.Entries.Length || state?.IsEnhancedClient != true)
+        {
+            return index;
+        }
+
+        var number = GetEnhancedClientActionNumber(index);
+
+        if (number == 0)
+        {
+            return index;
+        }
+
+        var entries = menu.Entries;
+        for (var i = 0; i < entries.Length; i++)
+        {
+            if (entries[i].Number == number)
+            {
+                return i;
+            }
+        }
+
+        return index;
+    }
+
+    // Action codes from ContextMenu.DefaultValues in the Enhanced Client's default UI (ContextMenu.lua),
+    // mapped to the cliloc of the entry they stand for. 520 (paperdoll) is never sent by the default UI, and
+    // 622 (unpack transfer crate) and 701 (load shuriken) have no context menu entry here.
+    private static int GetEnhancedClientActionNumber(int actionCode) =>
+        actionCode switch
+        {
+            110 => 3006103, // Buy
+            111 => 3006104, // Sell
+            120 => 3006105, // Open Bankbox
+            130 => 3006107, // Command: Guard
+            131 => 3006108, // Command: Follow
+            134 => 3006111, // Command: Kill
+            135 => 3006114, // Command: Stay
+            137 => 3006112, // Command: Stop
+            301 => 3006130, // Tame
+            303 => 3006146, // Talk
+            308 => 3006157, // Cancel Protection
+            320 => 1113797, // Enable PvP Warning
+            403 => 3006152, // Bulk Order Info
+            404 => 3006154, // View Quest Log
+            405 => 3006155, // Cancel Quest
+            406 => 3006156, // Quest Conversation
+            416 => 1114299, // Open Item Insurance Menu
+            418 => 3006201, // Toggle Item Insurance
+            419 => 1152294, // Bribe
+            602 => 3006205, // Release Co-Ownership
+            604 => 3006207, // Leave House
+            801 => 3006169, // Toggle Quest Item
+            810 => 3000197, // Add Party Member
+            811 => 3000198, // Remove Party Member
+            820 => 3006168, // Siege Bless Item
+            915 => 1049594, // Loyalty Rating
+            918 => 1115022, // Open Titles Menu
+            1010 => 1152531, // Void Pool
+            1013 => 1154112, // Allow Trades
+            1014 => 1154113, // Refuse Trades
+            _ => 0
+        };
 
     public static void ContextMenuRequest(NetState state, SpanReader reader)
     {
