@@ -32,6 +32,10 @@ public abstract partial class BaseEquipableLight : BaseLight
         }
 
         var stack = SplitStack();
+
+        // OnEquip runs before the move, so this one is still in the container: the rest keeps the stack's grid cell.
+        stack?.SwapGridSlot(this);
+
         if (stack != null && stack.Parent != from.Backpack)
         {
             if (from.AddToBackpack(stack))
@@ -73,7 +77,8 @@ public abstract partial class BaseEquipableLight : BaseLight
             }
             else
             {
-                SplitStack();
+                // The lit one leaves; the rest stays in the stack's grid cell.
+                SplitStack()?.SwapGridSlot(this);
                 MoveToWorld(holder.Location, holder.Map);
 
                 if (this is Candle)

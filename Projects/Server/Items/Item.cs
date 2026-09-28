@@ -213,6 +213,13 @@ public partial class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropert
     // Where DecayScheduler tracks this item. Not serialized; PostDeserialize re-registers.
     internal sbyte DecaySlot = DecayScheduler.SlotNone;
 
+    /// <summary>Grid slot value meaning "no cell"; also sent for items that do not fit the grid.</summary>
+    public const byte NoGridSlot = 0xFF;
+
+    // Enhanced Client grid cell inside the parent container, 0-based as on the wire (byte n = UI cell n+1).
+    // Kept after the item leaves a container as its last slot, which a bounce or re-add prefers.
+    internal byte _gridSlot = NoGridSlot;
+
     private int m_Hue;
     private int m_ItemID;
     private Layer m_Layer;
@@ -241,6 +248,50 @@ public partial class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropert
     }
 
     public Item(Serial serial) => Serial = serial;
+
+    /// <summary>
+    ///     Enhanced Client grid cell inside the parent container (0-based, <see cref="NoGridSlot" /> = none).
+    ///     In a container the value is checked like an add: a taken or out-of-range cell keeps the current one.
+    /// </summary>
+    [CommandProperty(AccessLevel.GameMaster)]
+    public byte GridSlot
+    {
+        get => _gridSlot;
+        set
+        {
+            var slot = m_Parent is Container container
+                ? container.FindGridSlot(this, value, _gridSlot)
+                : value < Container.MaxGridSlots ? value : NoGridSlot;
+
+            if (slot == _gridSlot)
+            {
+                return;
+            }
+
+            _gridSlot = slot;
+            this.MarkDirty();
+            Delta(ItemDelta.Update);
+        }
+    }
+
+    /// <summary>
+    ///     Exchanges grid cells with <paramref name="other" /> when both sit in the same container, e.g. after a stack split
+    ///     where the original leaves and the split-off rest should stay where the stack was.
+    /// </summary>
+    public void SwapGridSlot(Item other)
+    {
+        if (other == null || other == this || m_Parent is not Container || other.m_Parent != m_Parent ||
+            _gridSlot == other._gridSlot)
+        {
+            return;
+        }
+
+        (_gridSlot, other._gridSlot) = (other._gridSlot, _gridSlot);
+        this.MarkDirty();
+        other.MarkDirty();
+        Delta(ItemDelta.Update);
+        other.Delta(ItemDelta.Update);
+    }
 
     public int TempFlags
     {
@@ -887,7 +938,7 @@ public partial class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropert
 
     public virtual void Serialize(IGenericWriter writer)
     {
-        writer.Write(11); // version
+        writer.Write(12); // version
 
         var flags = SaveFlag.None;
 
@@ -1037,6 +1088,11 @@ public partial class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropert
             flags |= SaveFlag.PlayerConstructed;
         }
 
+        if (_gridSlot != NoGridSlot)
+        {
+            flags |= SaveFlag.GridSlot;
+        }
+
         writer.Write((int)flags);
 
         // Anchored: shifted by downtime at load, so time-since-moved is preserved and the
@@ -1160,6 +1216,11 @@ public partial class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropert
         if (GetSaveFlag(flags, SaveFlag.SavedFlags))
         {
             writer.WriteEncodedInt(info.m_SavedFlags);
+        }
+
+        if (GetSaveFlag(flags, SaveFlag.GridSlot))
+        {
+            writer.Write(_gridSlot);
         }
     }
 
@@ -2795,6 +2856,7 @@ public partial class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropert
 
         switch (version)
         {
+            case 12:
             case 11:
             case 10:
             case 9:
@@ -3008,6 +3070,11 @@ public partial class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropert
                     if (GetSaveFlag(flags, SaveFlag.SavedFlags))
                     {
                         AcquireCompactInfo().m_SavedFlags = reader.ReadEncodedInt();
+                    }
+
+                    if (version >= 12 && GetSaveFlag(flags, SaveFlag.GridSlot))
+                    {
+                        _gridSlot = reader.ReadByte();
                     }
 
                     PlayerConstructed = GetSaveFlag(flags, SaveFlag.PlayerConstructed);
@@ -4542,6 +4609,7 @@ public partial class Item : IHued, IComparable<Item>, ISpawnable, IObjectPropert
         SavedFlags = 0x02000000,
         NullWeight = 0x04000000,
         PlayerConstructed = 0x08000000,
-        DecayReset = 0x10000000
+        DecayReset = 0x10000000,
+        GridSlot = 0x20000000
     }
 }

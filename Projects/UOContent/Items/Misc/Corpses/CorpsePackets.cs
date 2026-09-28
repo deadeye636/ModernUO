@@ -108,7 +108,7 @@ public static class CorpsePackets
                 writer.Write((short)child.Y);
                 if (ns.ContainerGridLines)
                 {
-                    writer.Write((byte)0); // Grid Location?
+                    writer.Write(child.GridSlot);
                 }
                 writer.Write(beheld.Serial);
                 writer.Write((ushort)child.Hue);
@@ -128,7 +128,7 @@ public static class CorpsePackets
                 writer.Write(0); // X/Y
                 if (ns.ContainerGridLines)
                 {
-                    writer.Write((byte)0); // Grid Location?
+                    writer.Write(Item.NoGridSlot); // Hair and beard are virtual and take no cell
                 }
                 writer.Write(beheld.Serial);
                 writer.Write((ushort)beheld.HairHue);
@@ -145,7 +145,7 @@ public static class CorpsePackets
                 writer.Write(0); // X/Y
                 if (ns.ContainerGridLines)
                 {
-                    writer.Write((byte)0); // Grid Location?
+                    writer.Write(Item.NoGridSlot); // Hair and beard are virtual and take no cell
                 }
                 writer.Write(beheld.Serial);
                 writer.Write((ushort)beheld.FacialHairHue);

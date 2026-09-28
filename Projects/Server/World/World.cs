@@ -666,6 +666,10 @@ public static class World
         {
             base.PostDeserialize();
 
+            var gridTicks = 0L;
+            var gridContainers = 0;
+            var gridChanged = 0;
+
             foreach (var item in EntitiesBySerial.Values)
             {
                 if (item.Parent == null)
@@ -675,7 +679,23 @@ public static class World
 
                 item.ClearProperties();
                 item.UpdateDecayRegistration();
+
+                // Grid cells are fixed here, once, so sending container content never has to assign any.
+                if (item is Server.Items.Container container)
+                {
+                    var start = Stopwatch.GetTimestamp();
+                    gridContainers++;
+                    gridChanged += container.AssignGridSlots();
+                    gridTicks += Stopwatch.GetTimestamp() - start;
+                }
             }
+
+            logger.Information(
+                "Container grid slots: {Changed} items assigned in {Containers} containers ({Duration:F1} ms)",
+                gridChanged,
+                gridContainers,
+                gridTicks * 1000.0 / Stopwatch.Frequency
+            );
         }
     }
 

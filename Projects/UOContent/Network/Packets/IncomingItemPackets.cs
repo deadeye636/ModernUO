@@ -73,9 +73,17 @@ public static class IncomingItemPackets
         int y = reader.ReadInt16();
         int z = reader.ReadSByte();
 
+        var gridSlot = Item.NoGridSlot;
+
         if (state.ContainerGridLines)
         {
-            reader.ReadByte(); // Grid Location?
+            var grid = reader.ReadByte();
+
+            // Classic clients always send 0 here; only the Enhanced Client picks a cell (0-based, 0xFF = none).
+            if (state.IsEnhancedClient)
+            {
+                gridSlot = grid;
+            }
         }
 
         var dest = (Serial)reader.ReadUInt32();
@@ -100,6 +108,7 @@ public static class IncomingItemPackets
             }
             else
             {
+                from.GridSlotRequest = gridSlot;
                 from.Drop(item, loc);
             }
         }

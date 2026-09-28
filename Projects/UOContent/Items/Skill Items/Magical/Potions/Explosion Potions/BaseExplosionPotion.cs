@@ -256,7 +256,8 @@ public abstract partial class BaseExplosionPotion : BasePotion
 
             if (Potion.Amount > 1)
             {
-                Mobile.LiftItemDupe(Potion, 1);
+                // The thrown potion leaves; the rest stays in the stack's grid cell.
+                Mobile.LiftItemDupe(Potion, 1)?.SwapGridSlot(Potion);
             }
 
             Potion.Internalize();
