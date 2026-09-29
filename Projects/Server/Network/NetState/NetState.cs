@@ -834,7 +834,8 @@ public partial class NetState : IComparable<NetState>, IValueLinkListNode<NetSta
                 var packetLength = length;
 
                 // These can arrive at any time and are only informational
-                if (_protocolState != ProtocolState.AwaitingSeed && IncomingPackets.IsInfoPacket(packetId))
+                if (_protocolState != ProtocolState.AwaitingSeed && IncomingPackets.IsInfoPacket(packetId) &&
+                    !IsPossibleEncryptedLogin(buffer))
                 {
                     _parserState = ParserState.ProcessingPacket;
                     _parserState = HandlePacket(packetReader, packetId, out packetLength);
@@ -1156,6 +1157,15 @@ public partial class NetState : IComparable<NetState>, IValueLinkListNode<NetSta
         _parserState = ParserState.Error;
         _protocolState = ProtocolState.Error;
     }
+
+    // An encrypted login's first byte is 0x80 XOR the first keystream byte, which LoginEncryption takes from
+    // the seed alone, so some seeds make it read as an info packet id. Only that id is held until the login
+    // can be tried as a whole.
+    private bool IsPossibleEncryptedLogin(ReadOnlySpan<byte> buffer) =>
+        _protocolState == ProtocolState.LoginServer_AwaitingLogin &&
+        EncryptionManager.Mode.HasFlag(EncryptionMode.Encrypted) &&
+        buffer[0] == (byte)(0x80 ^ (((uint)Seed & 0xFF) ^ 0xAA)) &&
+        (buffer.Length < 62 || LoginEncryption.TryDecrypt(Version, (uint)Seed, buffer, out _));
 
     /*
      * length is the total buffer length. We might be able to use packetReader.Capacity() instead.
