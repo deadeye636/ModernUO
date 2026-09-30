@@ -74,6 +74,8 @@ public partial class NetState
 
     // Listener management
     private static nint[] _listeners = Array.Empty<nint>();
+    private static IPEndPoint[] _listenerEndPoints = [];
+    private static uint _unknownAcceptListenerCursor;
     private static int _pendingAcceptCount;
     private const int PendingAcceptsPerListener = 32;
 
@@ -493,6 +495,7 @@ public partial class NetState
     {
         HashSet<IPEndPoint> listeningAddresses = [];
         List<nint> listeners = [];
+        List<IPEndPoint> listenerEndPoints = [];
 
         var ring = _socketManager.Ring;
         for (var i = 0; i < ServerConfiguration.Listeners.Count; i++)
@@ -515,6 +518,7 @@ public partial class NetState
             }
 
             listeners.Add(listener);
+            listenerEndPoints.Add(ipep);
         }
 
         foreach (var ipep in listeningAddresses)
@@ -525,7 +529,7 @@ public partial class NetState
         ListeningAddresses = listeningAddresses.ToArray();
 
         // Register listeners to start accepting connections
-        RegisterListeners(listeners.ToArray());
+        RegisterListeners(listeners.ToArray(), listenerEndPoints.ToArray());
     }
 
     /// <summary>
@@ -549,9 +553,10 @@ public partial class NetState
     /// <summary>
     /// Registers listeners with the ring and starts accepting connections.
     /// </summary>
-    private static void RegisterListeners(nint[] listeners)
+    private static void RegisterListeners(nint[] listeners, IPEndPoint[] endPoints)
     {
         _listeners = listeners;
+        _listenerEndPoints = endPoints;
 
         var ring = _socketManager.Ring;
 
@@ -584,6 +589,73 @@ public partial class NetState
         }
 
         _listeners = [];
+        _listenerEndPoints = [];
+    }
+
+    /// <summary>
+    /// Finds the listener an accepted socket arrived on from the socket's local endpoint.
+    /// A listener bound to that exact address wins over a wildcard listener on the same port, and a wildcard of the
+    /// socket's address family wins over one of the other family (an IPv6-only <c>[::]</c> next to <c>0.0.0.0</c>).
+    /// The local endpoint carries no IPv6 scope id, so a listener configured with a scoped link-local address does
+    /// not match exactly; such a socket falls back to a wildcard listener or to no match.
+    /// </summary>
+    /// <returns>The listener index, or -1 if no listener matches.</returns>
+    internal static int FindListenerIndex(IPEndPoint[] listenerEndPoints, IPEndPoint localEndPoint)
+    {
+        if (localEndPoint == null)
+        {
+            return -1;
+        }
+
+        var sameFamilyWildcard = -1;
+        var otherWildcard = -1;
+        for (var i = 0; i < listenerEndPoints.Length; i++)
+        {
+            var endPoint = listenerEndPoints[i];
+            if (endPoint.Port != localEndPoint.Port)
+            {
+                continue;
+            }
+
+            var address = endPoint.Address;
+            if (address.Equals(localEndPoint.Address))
+            {
+                return i;
+            }
+
+            if (!address.Equals(IPAddress.Any) && !address.Equals(IPAddress.IPv6Any))
+            {
+                continue;
+            }
+
+            if (address.AddressFamily == localEndPoint.AddressFamily)
+            {
+                if (sameFamilyWildcard == -1)
+                {
+                    sameFamilyWildcard = i;
+                }
+            }
+            else if (otherWildcard == -1)
+            {
+                otherWildcard = i;
+            }
+        }
+
+        return sameFamilyWildcard != -1 ? sameFamilyWildcard : otherWildcard;
+    }
+
+    /// <summary>
+    /// Picks the listener for the accept that replaces a completed one: the listener the connection arrived on,
+    /// or, when that is unknown (failed accepts carry no socket), the next one in turn.
+    /// </summary>
+    internal static int SelectReplacementListener(int acceptedListenerIndex, int listenerCount, ref uint cursor)
+    {
+        if (acceptedListenerIndex >= 0 && acceptedListenerIndex < listenerCount)
+        {
+            return acceptedListenerIndex;
+        }
+
+        return (int)(cursor++ % (uint)listenerCount);
     }
 
     private static void HandleAcceptCompletion(int result)
@@ -591,6 +663,11 @@ public partial class NetState
         _pendingAcceptCount--;
 
         var ring = _socketManager.Ring;
+
+        // The completion does not carry its listener, so an accepted socket is traced back through its
+        // local endpoint. Each listener keeps its own share of pending accepts only if the replacement
+        // goes back to the listener that was consumed; otherwise a busy port drains to zero.
+        var listenerIndex = -1;
 
         // EAGAIN (-11) means no connection pending - just re-queue
         if (result == -11)
@@ -601,6 +678,9 @@ public partial class NetState
         if (result >= 0)
         {
             var clientSocket = (nint)result;
+            listenerIndex = _listeners.Length == 1
+                ? 0
+                : FindListenerIndex(_listenerEndPoints, SocketHelper.GetLocalEndPoint(clientSocket));
             var remoteIP = SocketHelper.GetRemoteAddress(clientSocket);
 
             if (remoteIP != null)
@@ -650,9 +730,10 @@ public partial class NetState
         var targetAccepts = _listeners.Length * PendingAcceptsPerListener;
         while (_pendingAcceptCount < targetAccepts && _listeners.Length > 0)
         {
-            var listenerIndex = _pendingAcceptCount % _listeners.Length;
-            ring.PrepareAccept(_listeners[listenerIndex], 0, 0, IORingUserData.EncodeAccept());
+            var index = SelectReplacementListener(listenerIndex, _listeners.Length, ref _unknownAcceptListenerCursor);
+            ring.PrepareAccept(_listeners[index], 0, 0, IORingUserData.EncodeAccept());
             _pendingAcceptCount++;
+            listenerIndex = -1;
         }
     }
 
