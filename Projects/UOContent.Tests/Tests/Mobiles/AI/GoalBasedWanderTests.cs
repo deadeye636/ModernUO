@@ -126,6 +126,115 @@ public class GoalBasedWanderTests
         mobile.Delete();
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ImmobilizedWanderer_NeitherMovesNorTurns(bool paralyze)
+    {
+        var map = Map.Maps[1];
+        Assert.NotNull(map);
+        map.GetAverageZ(1500, 1600, out _, out var z, out _);
+        var start = new Point3D(1500, 1600, z);
+        var (mobile, ai) = NewWanderer(map, start);
+        var northDoor = new DarkWoodDoor(DoorFacing.WestCW);
+        var northEastDoor = new DarkWoodDoor(DoorFacing.WestCW);
+        var northWestDoor = new DarkWoodDoor(DoorFacing.WestCW);
+        northDoor.MoveToWorld(new Point3D(1500, 1599, z), map);
+        northEastDoor.MoveToWorld(new Point3D(1501, 1599, z), map);
+        northWestDoor.MoveToWorld(new Point3D(1499, 1599, z), map);
+
+        try
+        {
+            mobile.Direction = Direction.North;
+            if (paralyze)
+            {
+                mobile.Paralyzed = true;
+            }
+            else
+            {
+                mobile.Frozen = true;
+            }
+
+            ai.SetWanderTargetForTesting(new Point3D(1500, 1596, z));
+
+            for (var i = 0; i < 4; i++)
+            {
+                ai.NextMove = 0;
+                ai.ContinueGoalBasedWanderForTesting();
+                Assert.Equal(start, mobile.Location);
+                Assert.Equal(Direction.North, mobile.Direction & Direction.Mask);
+            }
+
+            Assert.True(ai.HasWanderTargetForTesting);
+        }
+        finally
+        {
+            northDoor.Delete();
+            northEastDoor.Delete();
+            northWestDoor.Delete();
+            mobile.Delete();
+        }
+    }
+
+    [Fact]
+    public void OpenDoor_AtTheDestinationHeight_IsABarrier_FromAboveIt()
+    {
+        var map = Map.Maps[1];
+        Assert.NotNull(map);
+        map.GetAverageZ(1500, 1600, out _, out var z, out _);
+        // Standing 22 above the ground: the step east drops to z, where the door frame is.
+        var start = new Point3D(1500, 1600, z + 22);
+        var doorway = new Point3D(1501, 1600, z);
+        var (mobile, ai) = NewWanderer(map, start);
+        var door = new DarkWoodDoor(DoorFacing.WestCW);
+        door.MoveToWorld(doorway, map);
+        door.Open = true;
+
+        try
+        {
+            mobile.Direction = Direction.East;
+            ai.SetWanderTargetForTesting(new Point3D(1504, 1600, z));
+            ai.NextMove = 0;
+            ai.ContinueGoalBasedWanderForTesting();
+
+            Assert.False(mobile.X == doorway.X && mobile.Y == doorway.Y, "the wanderer must not step into the doorway");
+        }
+        finally
+        {
+            door.Delete();
+            mobile.Delete();
+        }
+    }
+
+    [Fact]
+    public void OpenDoor_FarAboveTheDestination_IsNotABarrier()
+    {
+        var map = Map.Maps[1];
+        Assert.NotNull(map);
+        map.GetAverageZ(1500, 1600, out _, out var z, out _);
+        // The door frame is level with the wanderer but 30 above the tile it steps onto.
+        var start = new Point3D(1500, 1600, z + 22);
+        var (mobile, ai) = NewWanderer(map, start);
+        var door = new DarkWoodDoor(DoorFacing.WestCW);
+        door.MoveToWorld(new Point3D(1501, 1600, z + 30), map);
+        door.Open = true;
+
+        try
+        {
+            mobile.Direction = Direction.East;
+            ai.SetWanderTargetForTesting(new Point3D(1504, 1600, z));
+            ai.NextMove = 0;
+            ai.ContinueGoalBasedWanderForTesting();
+
+            Assert.Equal(new Point3D(1501, 1600, z), mobile.Location);
+        }
+        finally
+        {
+            door.Delete();
+            mobile.Delete();
+        }
+    }
+
     [Fact]
     public void OpenDoor_RemainsAnIdleWanderBarrier()
     {

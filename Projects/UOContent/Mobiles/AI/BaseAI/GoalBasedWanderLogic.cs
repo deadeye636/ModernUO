@@ -71,6 +71,13 @@ public abstract partial class BaseAI
 
     private void ContinueGoalBasedWander()
     {
+        // The escape turn below sets Direction outside DoDirectWanderMove, so a frozen,
+        // paralyzed or casting creature must stop here or it keeps turning in place.
+        if (IsInBadState())
+        {
+            return;
+        }
+
         if (!_hasWanderTarget)
         {
             if (Core.TickCount - _wanderRestUntil < 0 || !TrySelectWanderTarget())
@@ -281,7 +288,7 @@ public abstract partial class BaseAI
             }
 
             if (location.X == destination.X && location.Y == destination.Y &&
-                location.Z + 20 > Mobile.Z && Mobile.Z + 16 > location.Z)
+                location.Z + 20 > destination.Z && destination.Z + 16 > location.Z)
             {
                 return true;
             }
