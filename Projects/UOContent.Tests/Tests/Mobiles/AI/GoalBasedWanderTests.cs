@@ -136,13 +136,9 @@ public class GoalBasedWanderTests
         map.GetAverageZ(1500, 1600, out _, out var z, out _);
         var start = new Point3D(1500, 1600, z);
         var (mobile, ai) = NewWanderer(map, start);
-        var northDoor = new DarkWoodDoor(DoorFacing.WestCW);
-        var northEastDoor = new DarkWoodDoor(DoorFacing.WestCW);
-        var northWestDoor = new DarkWoodDoor(DoorFacing.WestCW);
-        northDoor.MoveToWorld(new Point3D(1500, 1599, z), map);
-        northEastDoor.MoveToWorld(new Point3D(1501, 1599, z), map);
-        northWestDoor.MoveToWorld(new Point3D(1499, 1599, z), map);
 
+        // Open ground is enough: every direct step fails on the bad state, so the escape
+        // search runs and is what would turn the creature.
         try
         {
             mobile.Direction = Direction.North;
@@ -169,9 +165,6 @@ public class GoalBasedWanderTests
         }
         finally
         {
-            northDoor.Delete();
-            northEastDoor.Delete();
-            northWestDoor.Delete();
             mobile.Delete();
         }
     }
@@ -193,6 +186,11 @@ public class GoalBasedWanderTests
         try
         {
             mobile.Direction = Direction.East;
+
+            // The drop itself is legal, so only the doorway rule can refuse it.
+            Assert.True(mobile.CheckMovement(Direction.East, out var dropZ));
+            Assert.Equal(z, dropZ);
+
             ai.SetWanderTargetForTesting(new Point3D(1504, 1600, z));
             ai.NextMove = 0;
             ai.ContinueGoalBasedWanderForTesting();
@@ -248,16 +246,21 @@ public class GoalBasedWanderTests
         door.MoveToWorld(doorway, map);
         door.Open = true;
 
-        mobile.Direction = Direction.East;
-        ai.SetWanderTargetForTesting(new Point3D(1504, 1600, z));
-        ai.NextMove = 0;
-        ai.ContinueGoalBasedWanderForTesting();
+        try
+        {
+            mobile.Direction = Direction.East;
+            ai.SetWanderTargetForTesting(new Point3D(1504, 1600, z));
+            ai.NextMove = 0;
+            ai.ContinueGoalBasedWanderForTesting();
 
-        Assert.NotEqual(doorway, mobile.Location);
-        Assert.True(door.Open);
-        Assert.Null(ai.Path);
-
-        door.Delete();
-        mobile.Delete();
+            Assert.NotEqual(doorway, mobile.Location);
+            Assert.True(door.Open);
+            Assert.Null(ai.Path);
+        }
+        finally
+        {
+            door.Delete();
+            mobile.Delete();
+        }
     }
 }
