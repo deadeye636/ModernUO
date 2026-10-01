@@ -25,6 +25,7 @@ public static class NPCSpeeds
     // Time period to lock NPCs into idling
     public static int MinIdleSeconds { get; private set; }
     public static int MaxIdleSeconds { get; private set; }
+    public static bool GoalBasedWanderingEnabled { get; private set; }
 
     // Null when the table is unloaded (test fixtures). Immutable after Configure, so creatures cache it.
     public static SpeedClassEntry FindEntry(BaseCreature bc)
@@ -52,6 +53,7 @@ public static class NPCSpeeds
     {
         MinIdleSeconds = ServerConfiguration.GetSetting("movement.delay.npcMinIdle", 15);
         MaxIdleSeconds = ServerConfiguration.GetSetting("movement.delay.npcMaxIdle", 25);
+        GoalBasedWanderingEnabled = ServerConfiguration.GetSetting("movement.goalBasedWandering", false);
 
         var path = Path.Combine(Core.BaseDirectory, _tablePath);
         if (!File.Exists(path))

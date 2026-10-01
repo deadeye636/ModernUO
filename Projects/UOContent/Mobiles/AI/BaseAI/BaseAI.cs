@@ -60,6 +60,7 @@ public abstract partial class BaseAI
     {
         Mobile = m;
         NextMove = Core.TickCount;
+        _wanderRestUntil = Core.TickCount;
         AITimer = new AITimer(this);
 
         if (!m.PlayerRangeSensitive || !World.Loading && m.Map != null && m.Map != Map.Internal && m.Map.GetSector(m.Location).Active)
@@ -327,6 +328,7 @@ public abstract partial class BaseAI
     {
         // A change of course invalidates between-think movement continuation.
         ClearMoveIntent();
+        ClearWanderGoal();
 
         switch (Action)
         {
@@ -410,6 +412,7 @@ public abstract partial class BaseAI
     {
         if (CheckHerding())
         {
+            ClearWanderGoal();
             this.DebugSayFormatted($"I am being herded by {Mobile.ControlTarget?.Name ?? "Unknown"}.");
         }
         else if (ShouldBackoff())
@@ -421,10 +424,12 @@ public abstract partial class BaseAI
         }
         else if (Mobile.CurrentWayPoint != null)
         {
+            ClearWanderGoal();
             HandleWayPoint();
         }
         else if (Mobile.IsAnimatedDead)
         {
+            ClearWanderGoal();
             FollowMaster();
 
             if (CheckMove() && CanMoveNow(out _) && !Mobile.CheckIdle())
@@ -432,7 +437,8 @@ public abstract partial class BaseAI
                 WalkRandomInHome(3, 2, 1);
             }
         }
-        else if (CheckMove() && CanMoveNow(out _) && !Mobile.CheckIdle())
+        else if (CheckMove() && CanMoveNow(out _) &&
+                 !TryGoalBasedWander() && !Mobile.CheckIdle())
         {
             WalkRandomInHome(3, 2, 1);
         }

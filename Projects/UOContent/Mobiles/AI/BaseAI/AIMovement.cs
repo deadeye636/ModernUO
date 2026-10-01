@@ -121,6 +121,27 @@ public abstract partial class BaseAI
 
     public virtual bool DoMove(Direction d, bool badStateOk = false) => IsMoveSuccessful(DoMoveImpl(d, badStateOk), badStateOk);
 
+    private bool DoDirectWanderMove(Direction d)
+    {
+        if (IsInBadState() || !CanMoveNow(out _))
+        {
+            return false;
+        }
+
+        d = (d & Direction.Mask) | (ShouldRun() ? Direction.Running : 0);
+        Mobile.Direction = d;
+        Mobile.Pushing = false;
+
+        if (!TryMove(d))
+        {
+            return false;
+        }
+
+        Mobile.SetCurrentSpeedToPassive();
+        ConsumeMoveBudget();
+        return true;
+    }
+
     private static bool IsMoveSuccessful(MoveResult res, bool badStateOk) =>
         res is MoveResult.Success or MoveResult.SuccessAutoTurn
         || badStateOk && res == MoveResult.BadState;
@@ -584,7 +605,8 @@ public abstract partial class BaseAI
     {
         nextMove = NextMove;
 
-        return (_moveIntentTarget != null || _moveIntentPoint != null) && Core.TickCount - _moveIntentExpire < 0;
+        return TryGetWanderWake(out _) ||
+               (_moveIntentTarget != null || _moveIntentPoint != null) && Core.TickCount - _moveIntentExpire < 0;
     }
 
     /// <summary>
@@ -598,7 +620,11 @@ public abstract partial class BaseAI
             return;
         }
 
-        if (_moveIntentTarget != null)
+        if (TryGetWanderWake(out _))
+        {
+            ContinueGoalBasedWander();
+        }
+        else if (_moveIntentTarget != null)
         {
             ApproachTarget(_moveIntentTarget, _moveIntentRange);
         }
