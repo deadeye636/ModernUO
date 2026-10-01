@@ -1,3 +1,19 @@
+> **This is a fork of [ModernUO](https://github.com/modernuo/ModernUO), adapted for the TazUO-EC client.**
+> TazUO-EC is a client based on TazUO that draws the world with the art of an Enhanced Client installation.
+> A release of both is planned for later; until then this fork is a work in progress.
+>
+> What the fork adds to upstream:
+>
+> - Enhanced Client logins: login keys derived from the client version on the wire, the `0x8D` character
+>   creation packet, encrypted logins that look like info packets, context menus in the EC format and with its
+>   action codes, and the EC container grid slot saved per item.
+> - A configurable inactivity timeout.
+> - Optional goal-based idle wandering for NPCs (`movement.goalBasedWandering`, off by default).
+>
+> Branches: `main` mirrors upstream, `develop` is the state of this fork, and `feature/*` branches are merged
+> into `develop`. Everything below is the upstream README. Questions and reports about ModernUO itself belong
+> [upstream](https://github.com/modernuo/ModernUO), not here.
+
 <p align="center">
   <a href="https://muo.gg"><img alt="ModernUO - Ultima Online Server Emulator for the modern era!" src="https://cdn.muo.gg/gh/muo-logo.svg" width=128px /></a>
 </p>
