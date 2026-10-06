@@ -1,0 +1,18 @@
+[
+  {
+    "$type": "Spawner",
+    "guid": "5ee08b2c-ccf7-4088-bc02-e745fe6fd7c3",
+    "name": "Spawner (123)",
+    "location": [3515, 2569, 14],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 1,
+    "walkingRange": 5,
+    "entries": [
+      { "name": "TownCrier", "maxCount": 1, "probability": 100 }
+    ]
+  }
+]
