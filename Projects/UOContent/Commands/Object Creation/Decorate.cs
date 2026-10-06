@@ -15,6 +15,12 @@ namespace Server.Commands
 {
     public static class Decorate
     {
+        // Haven island was rebuilt as New Haven in ML; regions.json ends the old "Haven" region at SE.
+        public const string PreMLTrammelFolder = "Data/Decoration/TrammelPreML";
+
+        // Shard-owned decoration, kept apart from the upstream data. Holds New Haven, so ML and later only.
+        public const string CustomTrammelFolder = "Data/Decoration/custom/Trammel";
+
         private static Mobile m_Mobile;
         private static int m_Count;
 
@@ -34,19 +40,43 @@ namespace Server.Commands
 
             NetState.FlushAll();
 
-            Generate("Data/Decoration/Britannia", Map.Trammel, Map.Felucca);
-            Generate("Data/Decoration/Trammel", Map.Trammel);
-            Generate("Data/Decoration/Felucca", Map.Felucca);
-            Generate("Data/Decoration/Ilshenar", Map.Ilshenar);
-            Generate("Data/Decoration/Malas", Map.Malas);
-            Generate("Data/Decoration/Tokuno", Map.Tokuno);
-
-            if (PlayerMurderSystem.BountiesEnabled)
+            foreach (var (folder, maps) in GetDecorationSets())
             {
-                Generate("Data/Decoration/BountyBoards", Map.Felucca);
+                Generate(folder, maps);
             }
 
             m_Mobile.SendMessage($"World generating complete. {m_Count} items were generated.");
+        }
+
+        public static List<(string Folder, Map[] Maps)> GetDecorationSets()
+        {
+            List<(string Folder, Map[] Maps)> sets =
+            [
+                ("Data/Decoration/Britannia", [Map.Trammel, Map.Felucca]),
+                ("Data/Decoration/Trammel", [Map.Trammel])
+            ];
+
+            if (!Core.ML)
+            {
+                sets.Add((PreMLTrammelFolder, [Map.Trammel]));
+            }
+
+            sets.Add(("Data/Decoration/Felucca", [Map.Felucca]));
+            sets.Add(("Data/Decoration/Ilshenar", [Map.Ilshenar]));
+            sets.Add(("Data/Decoration/Malas", [Map.Malas]));
+            sets.Add(("Data/Decoration/Tokuno", [Map.Tokuno]));
+
+            if (PlayerMurderSystem.BountiesEnabled)
+            {
+                sets.Add(("Data/Decoration/BountyBoards", [Map.Felucca]));
+            }
+
+            if (Core.ML)
+            {
+                sets.Add((CustomTrammelFolder, [Map.Trammel]));
+            }
+
+            return sets;
         }
 
         public static void Generate(string folder, params Map[] maps)
@@ -1215,6 +1245,104 @@ namespace Server.Commands
             }
 
             return res;
+        }
+
+        public IReadOnlyList<DecorationEntry> Entries => m_Entries;
+
+        /// <summary>
+        /// Adds to <paramref name="results"/> every world item this list would have generated: see
+        /// <see cref="IsGenerated"/>. Unlike <see cref="FindItem"/>, nothing is deleted or replaced.
+        /// </summary>
+        public void FindGenerated(Map map, List<Item> results)
+        {
+            var template = Construct();
+
+            if (template == null)
+            {
+                return;
+            }
+
+            try
+            {
+                for (var i = 0; i < m_Entries.Count; ++i)
+                {
+                    var loc = m_Entries[i].Location;
+
+                    foreach (var item in map.GetItemsAt(loc.X, loc.Y))
+                    {
+                        if (IsGenerated(template, item, loc) && !results.Contains(item))
+                        {
+                            results.Add(item);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                template.Delete();
+            }
+        }
+
+        /// <summary>
+        /// True when <paramref name="item"/> is what this generator places from <paramref name="template"/> at
+        /// <paramref name="loc"/>: the same type and graphic at that exact location. Doors are compared closed,
+        /// spawners also by the names they spawn.
+        /// </summary>
+        public static bool IsGenerated(Item template, Item item, Point3D loc)
+        {
+            if (item == template || item.Deleted || item.GetType() != template.GetType())
+            {
+                return false;
+            }
+
+            if (item is BaseDoor door)
+            {
+                var closed = door.Open
+                    ? new Point3D(door.X - door.Offset.X, door.Y - door.Offset.Y, door.Z - door.Offset.Z)
+                    : door.Location;
+
+                return closed == loc && door.ClosedId == ((BaseDoor)template).ClosedId;
+            }
+
+            if (item.Location != loc || item.ItemID != template.ItemID)
+            {
+                return false;
+            }
+
+            if (item is BaseSpawner spawner)
+            {
+                return SpawnsSameNames(spawner, (BaseSpawner)template);
+            }
+
+            return true;
+        }
+
+        private static bool SpawnsSameNames(BaseSpawner a, BaseSpawner b)
+        {
+            var entriesA = a.Entries;
+            var entriesB = b.Entries;
+
+            if (entriesA.Count != entriesB.Count)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < entriesB.Count; ++i)
+            {
+                var found = false;
+
+                for (var j = 0; !found && j < entriesA.Count; ++j)
+                {
+                    found = entriesA[j].SpawnedName.InsensitiveEquals(entriesB[i].SpawnedName);
+                }
+
+                if (!found)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public int Generate(Map[] maps)

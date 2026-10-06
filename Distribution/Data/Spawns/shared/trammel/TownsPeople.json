@@ -463,22 +463,6 @@
   },
   {
     "$type": "Spawner",
-    "guid": "8b75bcf8-7b83-4d94-8573-92aff88cd41f",
-    "name": "Spawner (123)",
-    "location": [3652, 2619, 0],
-    "map": "Trammel",
-    "count": 1,
-    "minDelay": "00:05:00",
-    "maxDelay": "00:10:00",
-    "team": 0,
-    "homeRange": 1,
-    "walkingRange": 5,
-    "entries": [
-      { "name": "TownCrier", "maxCount": 1, "probability": 100 }
-    ]
-  },
-  {
-    "$type": "Spawner",
     "guid": "8d746f23-5e37-467c-9b8c-2af3b1ba0882",
     "name": "Spawner (123)",
     "location": [5685, 3148, -4],
@@ -645,24 +629,6 @@
     "walkingRange": 5,
     "entries": [
       { "name": "TownCrier", "maxCount": 1, "probability": 100 }
-    ]
-  },
-  {
-    "$type": "Spawner",
-    "guid": "ce3d7ff4-6411-4a30-914a-6b2bd1b9c752",
-    "name": "Spawner (123)",
-    "location": [3645, 2661, -2],
-    "map": "Trammel",
-    "count": 3,
-    "minDelay": "00:05:00",
-    "maxDelay": "00:10:00",
-    "team": 0,
-    "homeRange": 10,
-    "walkingRange": 20,
-    "entries": [
-      { "name": "EscortableMage", "maxCount": 3, "probability": 100 },
-      { "name": "SeekerOfAdventure", "maxCount": 3, "probability": 100 },
-      { "name": "Noble", "maxCount": 3, "probability": 100 }
     ]
   },
   {

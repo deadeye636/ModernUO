@@ -9,6 +9,9 @@ namespace Server.Commands
 {
     public static class SignParser
     {
+        // Signs of the pre-ML Haven (Trammel); Haven island was rebuilt as New Haven in ML.
+        public const string PreMLSignsFile = "Data/signs-preml.cfg";
+
         public static void Configure()
         {
             CommandSystem.Register("SignGen", AccessLevel.Developer, SignGen_OnCommand);
@@ -27,57 +30,17 @@ namespace Server.Commands
 
             if (File.Exists(cfg))
             {
-                var list = new List<SignEntry>();
                 from.SendMessage("Generating signs, please wait.");
 
                 NetState.FlushAll();
 
-                using (var ip = new StreamReader(cfg))
+                Generate(ReadAll(cfg));
+
+                var preML = Path.Combine(Core.BaseDirectory, PreMLSignsFile);
+
+                if (!Core.ML && File.Exists(preML))
                 {
-                    string line;
-
-                    while ((line = ip.ReadLine()) != null)
-                    {
-                        var split = line.Split(' ');
-
-                        var e = new SignEntry(
-                            line[(split[0].Length + 1 + split[1].Length + 1 + split[2].Length + 1 +
-                                  split[3].Length + 1 + split[4].Length + 1)..],
-                            new Point3D(Utility.ToInt32(split[2]), Utility.ToInt32(split[3]), Utility.ToInt32(split[4])),
-                            Utility.ToInt32(split[1]),
-                            Utility.ToInt32(split[0])
-                        );
-
-                        list.Add(e);
-                    }
-                }
-
-                Map[] brit = { Map.Felucca, Map.Trammel };
-                Map[] fel = { Map.Felucca };
-                Map[] tram = { Map.Trammel };
-                Map[] ilsh = { Map.Ilshenar };
-                Map[] malas = { Map.Malas };
-                Map[] tokuno = { Map.Tokuno };
-
-                for (var i = 0; i < list.Count; ++i)
-                {
-                    var e = list[i];
-
-                    var maps = e.m_Map switch
-                    {
-                        0 => brit,
-                        1 => fel,
-                        2 => tram,
-                        3 => ilsh,
-                        4 => malas,
-                        5 => tokuno,
-                        _ => null
-                    };
-
-                    for (var j = 0; maps?.Length > j; ++j)
-                    {
-                        Add_Static(e.m_ItemID, e.m_Location, maps[j], e.m_Text);
-                    }
+                    Generate(ReadAll(preML));
                 }
 
                 from.SendMessage("Sign generating complete.");
@@ -85,6 +48,57 @@ namespace Server.Commands
             else
             {
                 from.SendMessage($"{cfg} not found!");
+            }
+        }
+
+        public static List<SignEntry> ReadAll(string path)
+        {
+            var list = new List<SignEntry>();
+
+            using var ip = new StreamReader(path);
+            string line;
+
+            while ((line = ip.ReadLine()) != null)
+            {
+                var split = line.Split(' ');
+
+                var e = new SignEntry(
+                    line[(split[0].Length + 1 + split[1].Length + 1 + split[2].Length + 1 +
+                          split[3].Length + 1 + split[4].Length + 1)..],
+                    new Point3D(Utility.ToInt32(split[2]), Utility.ToInt32(split[3]), Utility.ToInt32(split[4])),
+                    Utility.ToInt32(split[1]),
+                    Utility.ToInt32(split[0])
+                );
+
+                list.Add(e);
+            }
+
+            return list;
+        }
+
+        public static Map[] GetMaps(int mapIndex) =>
+            mapIndex switch
+            {
+                0 => [Map.Felucca, Map.Trammel],
+                1 => [Map.Felucca],
+                2 => [Map.Trammel],
+                3 => [Map.Ilshenar],
+                4 => [Map.Malas],
+                5 => [Map.Tokuno],
+                _ => null
+            };
+
+        private static void Generate(List<SignEntry> list)
+        {
+            for (var i = 0; i < list.Count; ++i)
+            {
+                var e = list[i];
+                var maps = GetMaps(e.m_Map);
+
+                for (var j = 0; maps?.Length > j; ++j)
+                {
+                    Add_Static(e.m_ItemID, e.m_Location, maps[j], e.m_Text);
+                }
             }
         }
 
@@ -128,7 +142,7 @@ namespace Server.Commands
             sign.MoveToWorld(location, map);
         }
 
-        private class SignEntry
+        public class SignEntry
         {
             public readonly int m_ItemID;
             public readonly Point3D m_Location;

@@ -1,0 +1,691 @@
+[
+  {
+    "$type": "Spawner",
+    "guid": "5e41c4d3-8dbb-5e7c-a9f5-796778b580df",
+    "name": "New Haven Andric",
+    "location": [3742, 2581, 40],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Andric", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "d2afca30-e9df-5a2d-a7e5-b401a43ddce9",
+    "name": "New Haven Kashiel",
+    "location": [3745, 2587, 40],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Kashiel", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "5c36a958-5137-5b4e-aa9d-f8fa307a2566",
+    "name": "New Haven Asandos",
+    "location": [3506, 2514, 27],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Asandos", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "ecad9af3-6dbc-537c-a310-519117daaebf",
+    "name": "New Haven Clairesse",
+    "location": [3498, 2551, 20],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Clairesse", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "2bf4cfa4-2888-5851-9769-b2847c76c4d8",
+    "name": "New Haven Gervis",
+    "location": [3505, 2749, 0],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Gervis", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "33214f18-e6de-563f-9d80-e759cffbdb3c",
+    "name": "New Haven Mugg",
+    "location": [3507, 2747, 0],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Mugg", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "5ba0d954-3fa4-52a2-beda-cd103cce5d68",
+    "name": "New Haven Lowel",
+    "location": [3440, 2645, 28],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Lowel", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "c4a3ad19-37c5-53ab-8117-d7eca18f2411",
+    "name": "New Haven Lyle",
+    "location": [3512, 2586, 16],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 10,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Lyle", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "39749017-0ea4-58ab-8189-6d3d3e6479e3",
+    "name": "New Haven Nibbet",
+    "location": [3458, 2525, 53],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Nibbet", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "4c89bfa8-7c0a-5c7b-b815-907868e1f4de",
+    "name": "New Haven Norton",
+    "location": [3502, 2600, 1],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Norton", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "7018abc2-9c19-5eb9-a710-77f73bc91759",
+    "name": "New Haven CarpenterHargrove",
+    "location": [3444, 2637, 28],
+    "map": "Trammel",
+    "count": 2,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 3,
+    "walkingRange": 3,
+    "entries": [
+      { "name": "Carpenter", "maxCount": 1, "probability": 100 },
+      { "name": "Hargrove", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "43a81b9d-e7bd-5bf8-b5a8-46b744fdf232",
+    "name": "New Haven Aelorn",
+    "location": [3527, 2517, 45],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Aelorn", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "62ac4aff-89ee-57f2-96ed-07d65f205736",
+    "name": "New Haven Dimethro",
+    "location": [3528, 2518, 25],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Dimethro", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "001eebdb-b0e3-5fc3-909b-d0299d0c708d",
+    "name": "New Haven Churchill",
+    "location": [3531, 2531, 20],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Churchill", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "b513d1fe-defb-527a-a801-825757790b5a",
+    "name": "New Haven Robyn",
+    "location": [3535, 2531, 20],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Robyn", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "bce36b24-dec4-50c8-b5c6-1d2960a528ac",
+    "name": "New Haven Recaro",
+    "location": [3535, 2534, 20],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Recaro", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "e906d847-b18c-5b2f-a627-5678e10ac0e4",
+    "name": "New Haven AldenArmstrong",
+    "location": [3535, 2537, 20],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "AldenArmstrong", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "99855f7f-5581-5147-9afe-f6d1910c9c54",
+    "name": "New Haven Jockles",
+    "location": [3535, 2544, 20],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Jockles", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "f3bd285d-c4a9-54fa-a8cd-b774d3eb3843",
+    "name": "New Haven TylAriadne",
+    "location": [3525, 2556, 20],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "TylAriadne", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "46b70534-615f-5729-88b8-397b89f72515",
+    "name": "New Haven Alefian",
+    "location": [3478, 2494, 71],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Alefian", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "2748fdd3-b5f7-54fa-8269-8ab17982b97f",
+    "name": "New Haven Gustar",
+    "location": [3474, 2492, 91],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Gustar", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "91c60452-6543-5dde-9acd-3dc65b977853",
+    "name": "New Haven Jillian",
+    "location": [3465, 2491, 71],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Jillian", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "b12c5ed8-4c3a-599c-9b53-de91a04440f5",
+    "name": "New Haven Kaelynna",
+    "location": [3485, 2491, 52],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Kaelynna", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "86f23703-77d2-50c8-95db-d47985d050cc",
+    "name": "New Haven Mithneral",
+    "location": [3485, 2492, 71],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Mithneral", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "de56361a-eaab-522b-9abc-78e282c470ee",
+    "name": "New Haven AmeliaYoungstone",
+    "location": [3456, 2528, 53],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "AmeliaYoungstone", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "0c690947-df95-53ab-8431-5d9aab97a605",
+    "name": "New Haven AndreasVesalius",
+    "location": [3458, 2549, 35],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "AndreasVesalius", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "1cd475e2-535a-579f-a7d1-15770189e5fe",
+    "name": "New Haven Avicenna",
+    "location": [3464, 2558, 35],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 5,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Avicenna", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "0550a538-bdd5-5011-b2c4-0b915ff068c4",
+    "name": "New Haven SarsmeaSmythe",
+    "location": [3492, 2577, 15],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "SarsmeaSmythe", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "614205c2-10fe-5681-a118-2a74b6679b61",
+    "name": "New Haven Ryuichi",
+    "location": [3422, 2520, 21],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Ryuichi", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "648b784a-cffa-5de8-ab49-378a158a86c3",
+    "name": "New Haven Chiyo",
+    "location": [3420, 2516, 21],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Chiyo", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "2b27ae77-b433-5fb0-9498-0f92347584bb",
+    "name": "New Haven Jun",
+    "location": [3422, 2516, 21],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Jun", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "f58118fd-8051-5905-88f1-891cce7742d5",
+    "name": "New Haven Walker",
+    "location": [3429, 2518, 19],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Walker", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "63242a55-bd85-5ca1-a73a-d9d93069dd4f",
+    "name": "New Haven Hamato",
+    "location": [3494, 2414, 55],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Hamato", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "ac183520-6cba-530b-8bff-353a680e4b1d",
+    "name": "New Haven Mulcivikh",
+    "location": [3555, 2457, 15],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Mulcivikh", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "909d6f8a-0b54-5ef6-97a5-a8a6a5e02b01",
+    "name": "New Haven Morganna",
+    "location": [3547, 2462, 15],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Morganna", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "a7cf1e8c-441d-5303-ae7a-7fb1f7b0a184",
+    "name": "New Haven JacobWaltz",
+    "location": [3504, 2741, 0],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "JacobWaltz", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "3df02f96-d825-54ed-a138-ade60bf89eaa",
+    "name": "New Haven GeorgeHephaestus",
+    "location": [3471, 2542, 36],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "GeorgeHephaestus", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "b343295b-56ff-5702-b808-330a097f38a8",
+    "name": "New Haven ElwoodMcCarrin",
+    "location": [3502, 2563, 21],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "ElwoodMcCarrin", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "2cf50440-6771-5400-9015-699818c71a75",
+    "name": "New Haven Bard",
+    "location": [3414, 2602, 55],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 3,
+    "entries": [
+      { "name": "Bard", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "defcdf15-f20c-5640-b135-261bc3e9c930",
+    "name": "New Haven FisherGuildmaster",
+    "location": [3501, 2608, 1],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 5,
+    "entries": [
+      { "name": "FisherGuildmaster", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "685a7e7d-8aa2-56c0-9e0e-bdf0eb55495b",
+    "name": "New Haven Provisioner",
+    "location": [3507, 2553, 20],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 5,
+    "entries": [
+      { "name": "Provisioner", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "936725b4-ff24-5528-80e8-a26f74655866",
+    "name": "New Haven MilitiaFighter",
+    "location": [3530, 2542, 20],
+    "map": "Trammel",
+    "count": 2,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 5,
+    "entries": [
+      { "name": "MilitiaFighter", "maxCount": 2, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
+    "guid": "63628a87-5d54-5bd5-9658-817402234819",
+    "name": "New Haven Blacksmith",
+    "location": [3525, 2537, 20],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 2,
+    "entries": [
+      { "name": "Blacksmith", "maxCount": 1, "probability": 100 }
+    ]
+  }
+]
