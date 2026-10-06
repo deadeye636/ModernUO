@@ -142,6 +142,12 @@ public static class PingServer
 
     public static void Shutdown()
     {
+        // Start never assigns Listeners while the ping server is disabled.
+        if (Listeners == null)
+        {
+            return;
+        }
+
         foreach (var listener in Listeners)
         {
             listener.Close();
