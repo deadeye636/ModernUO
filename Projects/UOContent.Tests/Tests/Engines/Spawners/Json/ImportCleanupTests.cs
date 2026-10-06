@@ -197,4 +197,71 @@ public class ImportCleanupTests
             }
         }
     }
+
+    [Fact]
+    public void Import_SameTileDifferentZ_KeepsBothSpawners()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "muo-spawner-import-z-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        var path = Path.Combine(dir, "test-z.json");
+        File.WriteAllText(path, """
+            [
+              {
+                "$type": "Spawner",
+                "guid": "44444444-4444-4444-4444-444444444444",
+                "location": [315, 315, 20],
+                "map": "Felucca",
+                "count": 1,
+                "spawnBounds": { "x1": 314, "y1": 314, "x2": 316, "y2": 316 },
+                "entries": []
+              },
+              {
+                "$type": "Spawner",
+                "guid": "55555555-5555-5555-5555-555555555555",
+                "location": [315, 315, 21],
+                "map": "Felucca",
+                "count": 1,
+                "spawnBounds": { "x1": 314, "y1": 314, "x2": 316, "y2": 316 },
+                "entries": []
+              }
+            ]
+            """);
+
+        var existing = new Spawner(1, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
+        existing.MoveToWorld(new Point3D(315, 315, 40), Map.Felucca);
+
+        var placed = new List<BaseSpawner>();
+        try
+        {
+            var all = new Dictionary<Guid, ISpawner> { [existing.Guid] = existing };
+            ImportSpawnersCommand.ImportFile(new FileInfo(path), all);
+
+            foreach (var s in Map.Felucca.GetItemsAt<BaseSpawner>(new Point3D(315, 315, 0)))
+            {
+                placed.Add(s);
+            }
+
+            Assert.False(existing.Deleted);
+            Assert.Contains(existing.Guid, all.Keys);
+            Assert.Contains(placed, s => s.Guid == new Guid("44444444-4444-4444-4444-444444444444"));
+            Assert.Contains(placed, s => s.Guid == new Guid("55555555-5555-5555-5555-555555555555"));
+        }
+        finally
+        {
+            foreach (var s in placed)
+            {
+                s.Delete();
+            }
+
+            if (!existing.Deleted)
+            {
+                existing.Delete();
+            }
+
+            if (Directory.Exists(dir))
+            {
+                Directory.Delete(dir, true);
+            }
+        }
+    }
 }

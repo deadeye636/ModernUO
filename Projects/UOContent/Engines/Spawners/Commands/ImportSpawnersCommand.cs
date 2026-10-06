@@ -257,9 +257,11 @@ public static class ImportSpawnersCommand
             var type = spawner.GetType();
 
             // Delete all existing spawners of the same concrete type at this location.
+            // GetItemsAt matches X/Y only; Z must match too, or spawners on different floors of the
+            // same tile (shop counters, upper storeys) replace each other.
             foreach (var existing in map.GetItemsAt<BaseSpawner>(location))
             {
-                if (existing.GetType() == type && existing != spawner)
+                if (existing.GetType() == type && existing.Z == location.Z && existing != spawner)
                 {
                     queue.Enqueue(existing);
                     allSpawners.Remove(existing.Guid);
