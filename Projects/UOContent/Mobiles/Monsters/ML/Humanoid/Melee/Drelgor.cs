@@ -5,10 +5,15 @@ using Server.Items;
 namespace Server.Mobiles;
 
 // Named undead of the Old Haven ruins (Trammel, from Mondain's Legacy on): a skeletal knight that
-// spawns among the zombies, skeletons and spellbinders there.
+// appears once enough of the zombies, skeletons and spellbinders there have died (KillCountSpawner).
+// Young players are spared through the ordinary young protection of the Haven Island region.
 [SerializationGenerator(0)]
 public partial class Drelgor : BaseCreature
 {
+    // Chance that the corpse holds one piece of his bone suit. No source gives a rate ("occasionally");
+    // 10 % is our choice, about one piece every ten kills.
+    public static double SuitDropChance { get; set; } = 0.10;
+
     // Who dares to defile Haven? I am Drelgor the Impaler! I shall claim your souls as payment for this intrusion!
     public const int ChallengeCliloc = 1077840;
     public const int ChallengeSound = 0x14;
@@ -77,6 +82,26 @@ public partial class Drelgor : BaseCreature
         AddLoot(LootPack.Average);
         AddLoot(LootPack.Meager);
     }
+
+    public override void OnDeath(Container c)
+    {
+        base.OnDeath(c);
+
+        if (SuitDropChance > 0.0 && Utility.RandomDouble() < SuitDropChance)
+        {
+            c.DropItem(CreateSuitPiece());
+        }
+    }
+
+    public static Item CreateSuitPiece() =>
+        Utility.Random(5) switch
+        {
+            0 => new DrelgorBoneArms(),
+            1 => new DrelgorBoneTunic(),
+            2 => new DrelgorBoneGloves(),
+            3 => new DrelgorBoneLegs(),
+            _ => new DrelgorBoneHelm()
+        };
 
     public override void OnCombatantChange()
     {
