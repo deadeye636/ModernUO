@@ -1,0 +1,18 @@
+[
+  {
+    "$type": "Spawner",
+    "guid": "1afed568-54da-5f60-868f-433786638523",
+    "name": "Old Haven Drelgor",
+    "location": [3651, 2509, 0],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:30:00",
+    "maxDelay": "01:00:00",
+    "team": 0,
+    "homeRange": 15,
+    "walkingRange": 30,
+    "entries": [
+      { "name": "Drelgor", "maxCount": 1, "probability": 100 }
+    ]
+  }
+]
