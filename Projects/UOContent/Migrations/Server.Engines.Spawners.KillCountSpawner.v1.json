@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "type": "Server.Engines.Spawners.KillCountSpawner",
+  "properties": [
+    {
+      "name": "CountedSpawners",
+      "type": "System.Collections.Generic.List\u003CSystem.Guid\u003E",
+      "rule": "ListMigrationRule",
+      "ruleArguments": [
+        "System.Guid",
+        "PrimitiveTypeMigrationRule"
+      ]
+    },
+    {
+      "name": "KillsRequired",
+      "type": "int",
+      "rule": "PrimitiveTypeMigrationRule",
+      "ruleArguments": [
+        ""
+      ]
+    },
+    {
+      "name": "KillCount",
+      "type": "int",
+      "rule": "PrimitiveTypeMigrationRule",
+      "ruleArguments": [
+        ""
+      ]
+    },
+    {
+      "name": "BossTimeout",
+      "type": "System.TimeSpan",
+      "rule": "PrimitiveTypeMigrationRule"
+    },
+    {
+      "name": "KillDecay",
+      "type": "System.TimeSpan",
+      "rule": "PrimitiveTypeMigrationRule"
+    },
+    {
+      "name": "BossTimeoutTimer",
+      "type": "Server.Timer",
+      "rule": "TimerMigrationRule",
+      "ruleArguments": [
+        "@AnchoredTimer"
+      ]
+    },
+    {
+      "name": "KillDecayTimer",
+      "type": "Server.Timer",
+      "rule": "TimerMigrationRule",
+      "ruleArguments": [
+        "@AnchoredTimer"
+      ]
+    }
+  ]
+}

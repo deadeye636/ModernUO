@@ -48,6 +48,7 @@ public abstract partial class BaseSpawner
         if (spawned != null && Spawned != null && Spawned.TryGetValue(spawned, out var entry))
         {
             OnSpawnedDeath(entry, spawned, killer);
+            SpawnerEvents.SpawnedDeathEvent(this, spawned, killer);
         }
     }
 }
