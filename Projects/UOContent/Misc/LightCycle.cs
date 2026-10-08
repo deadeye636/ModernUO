@@ -68,7 +68,10 @@ namespace Server
                 return m_LevelOverride;
             }
 
-            Clock.GetTime(from.Map, from.X, from.Y, out var hours, out int minutes);
+            if (!Misc.AmbientTime.TryGetOverride(out var hours, out var minutes))
+            {
+                Clock.GetTime(from.Map, from.X, from.Y, out hours, out minutes);
+            }
 
             /* OSI times:
              *

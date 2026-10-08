@@ -350,7 +350,7 @@ public partial class Weather
             {
                 var mob = ns.Mobile;
 
-                if (mob == null || mob.Map != Facet)
+                if (mob == null || mob.Map != Facet || AmbientWeather.IsForced(Facet))
                 {
                     continue;
                 }
