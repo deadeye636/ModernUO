@@ -36,7 +36,7 @@ public partial class HouseSign : Item
         }
     }
 
-    public int LabelNumber => 1061638; // A House Sign
+    public override int LabelNumber => 1061638; // A House Sign
 
     public override bool ForceShowProperties => ObjectPropertyList.Enabled;
 
