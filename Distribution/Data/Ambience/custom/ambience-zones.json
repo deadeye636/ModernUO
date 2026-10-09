@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "presetTable": 1,
+  "presets": {
+    "graveyard-night": 1,
+    "graveyard-dawn": 2,
+    "forest-dawn": 3,
+    "forest-rain": 4,
+    "swamp": 5,
+    "swamp-dawn": 6
+  },
+  "zones": [
+    {
+      "id": "britain-graveyard",
+      "maps": ["Trammel", "Felucca"],
+      "priority": 50,
+      "feather": 4,
+      "rects": [{ "x1": 1333, "y1": 1441, "x2": 1417, "y2": 1523 }],
+      "rules": [
+        { "time": ["night", "dusk"], "preset": "graveyard-night" },
+        { "time": ["dawn"], "preset": "graveyard-dawn", "fade": 6 },
+        { "weather": ["rain"], "preset": "graveyard-night", "strength": 0.5 }
+      ]
+    },
+    {
+      "id": "huntsmans-forest",
+      "maps": ["Trammel", "Felucca"],
+      "priority": 50,
+      "feather": 8,
+      "rects": [{ "x1": 1595, "y1": 550, "x2": 1715, "y2": 670 }],
+      "rules": [
+        { "weather": ["rain"], "preset": "forest-rain" },
+        { "time": ["dawn"], "preset": "forest-dawn", "fade": 6 },
+        { "time": ["day"], "preset": "forest-dawn", "strength": 0.6 },
+        { "time": ["night", "dusk"], "preset": "forest-rain", "strength": 0.6 }
+      ]
+    },
+    {
+      "id": "britain-swamp",
+      "maps": ["Trammel", "Felucca"],
+      "priority": 40,
+      "feather": 8,
+      "rects": [{ "x1": 1024, "y1": 2144, "x2": 1280, "y2": 2304 }],
+      "rules": [
+        { "time": ["dawn"], "preset": "swamp-dawn", "fade": 6 },
+        { "preset": "swamp" }
+      ]
+    }
+  ]
+}
