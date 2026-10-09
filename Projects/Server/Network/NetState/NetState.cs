@@ -80,6 +80,7 @@ public partial class NetState : IComparable<NetState>, IValueLinkListNode<NetSta
     internal ParserState _parserState = ParserState.AwaitingNextPacket;
     internal ProtocolState _protocolState = ProtocolState.AwaitingSeed;
     private bool _packetLogging;
+    private int _tracedPackets;
 
     // Whether ANY inbound bytes have arrived: what separates a slow client from a socket held open on
     // purpose. See BanSettings.ReportBadConnects.
@@ -818,8 +819,10 @@ public partial class NetState : IComparable<NetState>, IValueLinkListNode<NetSta
         // Data already in recv buffer from recv completion - no need to call ReceiveData
         try
         {
-            // Process as many packets as we can synchronously
-            while (_running && _parserState != ParserState.Error && _protocolState != ProtocolState.Error)
+            // Process as many packets as we can synchronously. A handler that queued a disconnect ends the batch, so a
+            // client cannot have the rest of its buffer handled after it was told to go.
+            while (_running && !_disconnectQueued && _parserState != ParserState.Error &&
+                   _protocolState != ProtocolState.Error)
             {
                 var buffer = _socket.RecvBuffer.GetReadSpan();
                 var length = buffer.Length;
@@ -1326,12 +1329,25 @@ public partial class NetState : IComparable<NetState>, IValueLinkListNode<NetSta
             return;
         }
 
+        var decision = NextTrace();
+
+        if (decision == TraceDecision.Skip)
+        {
+            return;
+        }
+
         try
         {
             using var sw = new StreamWriter("unhandled-packets.log", true);
             sw.WriteLine("Client: {0}: Unhandled packet 0x{1:X2}", this, buffer[0]);
             sw.FormatBuffer(buffer);
             sw.WriteLine();
+
+            if (decision == TraceDecision.WriteAndNoteLimit)
+            {
+                sw.WriteLine("Client: {0}: further unhandled packets of this client are not traced", this);
+            }
+
             sw.WriteLine();
         }
         catch
@@ -1340,12 +1356,28 @@ public partial class NetState : IComparable<NetState>, IValueLinkListNode<NetSta
         }
     }
 
+    /// <summary>
+    /// Counts one client-triggered diagnostic of this session against the trace limits of <see cref="TraceThrottle"/>.
+    /// </summary>
+    /// <returns>Whether the diagnostic is written, and whether it is the session's last one.</returns>
+    public TraceDecision NextTrace() => TraceThrottle.Next(ref _tracedPackets, Core.TickCount);
+
     public static void TraceException(Exception ex)
     {
+        if (!TraceThrottle.NextException(Core.TickCount, out var suppressed))
+        {
+            return;
+        }
+
         try
         {
             using var op = new StreamWriter("network-errors.log", true);
             op.WriteLine("# {0}", Core.Now);
+
+            if (suppressed > 0)
+            {
+                op.WriteLine("# {0} earlier exceptions were not written (rate limit)", suppressed);
+            }
 
             op.WriteLine(ex);
 

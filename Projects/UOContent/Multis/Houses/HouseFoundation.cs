@@ -1671,6 +1671,11 @@ namespace Server.Multis
 
         private static void TraceValidity(NetState state, int itemID)
         {
+            if (state.NextTrace() == TraceDecision.Skip)
+            {
+                return;
+            }
+
             try
             {
                 using var op = new StreamWriter("comp_val.log", true);
