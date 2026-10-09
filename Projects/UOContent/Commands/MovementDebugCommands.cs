@@ -83,6 +83,17 @@ public static class MovementDebugCommands
         var stats = MovementThrottle.GetMovementStats(target.NetState);
 
         from.SendMessage($"--- Movement Stats for {target.RawName} ---");
+
+        // Staff and a disabled detection bypass the throttle (MovementThrottle), so nothing is sampled for them.
+        if (target.AccessLevel > AccessLevel.Player)
+        {
+            from.SendMessage("Staff bypass the movement throttle: no samples are recorded for this character.");
+        }
+        else if (!ServerFeatureFlags.SpeedhackDetection)
+        {
+            from.SendMessage("Speedhack detection is off: no samples are recorded.");
+        }
+
         from.SendMessage($"Rate: {stats.Rate:F3} ({stats.SampleCount} samples) | Verdict: {stats.Verdict} | Confidence: {stats.Confidence:P0}");
         from.SendMessage($"RTT: avg={stats.AverageRtt}ms last={stats.LastRtt}ms var={stats.RttVariance} stable={stats.StableConnection} samples={stats.RttSampleCount}");
         from.SendMessage($"Queue: depth={stats.QueueDepth} | Credit: {stats.MovementCredit}ms");
