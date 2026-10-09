@@ -80,6 +80,7 @@ public static partial class GumpSystem
                     var exception = new InvalidGumpResponseException($"Button {buttonId} doesn't exist");
                     exception.SetStackTrace(new StackTrace());
                     NetState.TraceException(exception);
+                    state.Disconnect("Invalid gump response.");
                     return;
                 }
             }
@@ -92,6 +93,7 @@ public static partial class GumpSystem
                 var exception = new InvalidGumpResponseException($"Bad switch count {switchCount}");
                 exception.SetStackTrace(new StackTrace());
                 NetState.TraceException(exception);
+                state.Disconnect("Invalid gump response.");
                 return;
             }
 
@@ -124,6 +126,7 @@ public static partial class GumpSystem
                 var exception = new InvalidGumpResponseException($"Bad text entry count {textCount}");
                 exception.SetStackTrace(new StackTrace());
                 NetState.TraceException(exception);
+                state.Disconnect("Invalid gump response.");
                 return;
             }
 
@@ -142,6 +145,7 @@ public static partial class GumpSystem
                     var exception = new InvalidGumpResponseException($"Text entry {i} is too long ({textLength})");
                     exception.SetStackTrace(new StackTrace());
                     NetState.TraceException(exception);
+                    state.Disconnect("Invalid gump response.");
                     return;
                 }
 
