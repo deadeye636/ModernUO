@@ -6,7 +6,7 @@ namespace Server.Mobiles
     public partial class Bird : BaseCreature
     {
         [Constructible]
-        public Bird() : base(AIType.AI_Animal, FightMode.Aggressor)
+        public Bird() : base(AIType.AI_Skittish, FightMode.Aggressor)
         {
             if (Utility.RandomBool())
             {
@@ -53,6 +53,8 @@ namespace Server.Mobiles
 
         public override string CorpseName => "a bird corpse";
 
+        public override OppositionGroup OppositionGroup => OppositionGroup.BirdsAndCats;
+
         public override MeatType MeatType => MeatType.Bird;
         public override int Meat => 1;
         public override int Feathers => 25;
@@ -63,7 +65,7 @@ namespace Server.Mobiles
     public partial class TropicalBird : BaseCreature
     {
         [Constructible]
-        public TropicalBird() : base(AIType.AI_Animal, FightMode.Aggressor)
+        public TropicalBird() : base(AIType.AI_Skittish, FightMode.Aggressor)
         {
             Hue = Utility.RandomBirdHue();
 
@@ -94,6 +96,8 @@ namespace Server.Mobiles
 
         public override string CorpseName => "a bird corpse";
         public override string DefaultName => "a tropical bird";
+
+        public override OppositionGroup OppositionGroup => OppositionGroup.BirdsAndCats;
 
         public override MeatType MeatType => MeatType.Bird;
         public override int Meat => 1;

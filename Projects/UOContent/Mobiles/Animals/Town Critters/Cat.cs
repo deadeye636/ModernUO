@@ -7,7 +7,7 @@ namespace Server.Mobiles
     public partial class Cat : BaseCreature
     {
         [Constructible]
-        public Cat() : base(AIType.AI_Animal, FightMode.Aggressor)
+        public Cat() : base(AIType.AI_Stalk, FightMode.Aggressor)
         {
             Body = 0xC9;
             Hue = Utility.RandomAnimalHue();
@@ -42,6 +42,8 @@ namespace Server.Mobiles
 
         public override string CorpseName => "a cat corpse";
         public override string DefaultName => "a cat";
+
+        public override OppositionGroup OppositionGroup => OppositionGroup.BirdsAndCats;
 
         public override int Meat => 1;
         public override FoodType FavoriteFood => FoodType.Meat | FoodType.Fish;

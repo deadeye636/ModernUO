@@ -86,6 +86,18 @@ public class OppositionGroup
         ]
     );
 
+    public static OppositionGroup BirdsAndCats { get; } = new(
+        [
+            [
+                typeof(Cat)
+            ],
+            [
+                typeof(Bird),
+                typeof(TropicalBird)
+            ]
+        ]
+    );
+
     public bool IsEnemy(object from, object target)
     {
         var fromGroup = IndexOf(from);
