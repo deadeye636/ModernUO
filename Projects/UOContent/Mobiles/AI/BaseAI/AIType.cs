@@ -26,5 +26,7 @@ public enum AIType
     AI_Mage,
     AI_Berserk,
     AI_Predator,
-    AI_Thief
+    AI_Thief,
+    AI_Stalk,
+    AI_Skittish
 }

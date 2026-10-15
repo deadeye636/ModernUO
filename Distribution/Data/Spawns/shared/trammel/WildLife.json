@@ -1,6 +1,24 @@
 [
   {
     "$type": "Spawner",
+    "guid": "fa0b1c2d-3e4f-4a5b-8c6d-7e8f9a0b1c2d",
+    "name": "Ambient Fauna",
+    "location": [2744, 2014, 0],
+    "map": "Trammel",
+    "count": 4,
+    "minDelay": "00:15:00",
+    "maxDelay": "00:30:00",
+    "team": 0,
+    "homeRange": 60,
+    "walkingRange": 60,
+    "entries": [
+      { "name": "Bird", "maxCount": 2, "probability": 100 },
+      { "name": "TropicalBird", "maxCount": 1, "probability": 100 },
+      { "name": "Cat", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
     "guid": "0022416f-f5eb-483c-9ad4-eac25ac3af57",
     "name": "Spawner (126)",
     "location": [2744, 2014, 0],

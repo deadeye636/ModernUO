@@ -1,6 +1,24 @@
 [
   {
     "$type": "Spawner",
+    "guid": "fb1c2d3e-4f50-4a6b-8c7d-8e9f0a1b2c3d",
+    "name": "Ambient Fauna",
+    "location": [846, 1071, 0],
+    "map": "Felucca",
+    "count": 4,
+    "minDelay": "00:15:00",
+    "maxDelay": "00:30:00",
+    "team": 0,
+    "homeRange": 60,
+    "walkingRange": 60,
+    "entries": [
+      { "name": "Bird", "maxCount": 2, "probability": 100 },
+      { "name": "TropicalBird", "maxCount": 1, "probability": 100 },
+      { "name": "Cat", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "$type": "Spawner",
     "guid": "01728819-da08-4e42-9763-39cdf14b7707",
     "name": "Spawner (226)",
     "location": [846, 1071, 0],
