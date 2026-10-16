@@ -71,6 +71,12 @@
         <DefineConstants>$(DefineConstants);EVENT_LOOP_PROFILING</DefineConstants>
     </PropertyGroup>
     <ItemGroup>
+        <!-- Pulled in transitively at 10.0.0 by several projects, where 10.0.0-10.0.12 carry
+             GHSA-846f-f764-76mx (high) and GHSA-2fmv-rv2c-59x7 (moderate). Pin to the first patched
+             servicing release so the NuGet audit (warnings-as-errors) passes across the solution.
+             The DLL is dropped from the distribution in UOContent's CleanPub target, so this only
+             affects restore/compile. -->
+        <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
         <PackageReference Include="Serilog" Version="4.4.0" />
         <PackageReference Include="Serilog.Sinks.Async" Version="2.1.0" />
         <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
