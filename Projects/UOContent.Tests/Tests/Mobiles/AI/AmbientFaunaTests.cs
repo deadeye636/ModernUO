@@ -133,7 +133,31 @@ public class AmbientFaunaTests : IDisposable
     }
 
     [Fact]
-    public void WildCat_Pounces_PreyWithinPounceRange()
+    public void WildCat_Sprints_TowardPreyWithinPounceRange()
+    {
+        var map = Map.Maps[1];
+        Assert.NotNull(map);
+        map.GetAverageZ(1500, 1600, out _, out var z, out _);
+
+        var cat = Spawn<Cat>(map, new Point3D(1500, 1600, (sbyte)z));
+        var bird = Spawn<Bird>(map, new Point3D(1497, 1600, (sbyte)z)); // 3 tiles: inside pounce range, not adjacent
+
+        cat.AIObject.DoActionWander();
+
+        // It sprints at the prey, not into combat: no combatant, still foraging as far as the state
+        // machine is concerned, prey unharmed, and the cat now faces the bird.
+        Assert.Equal(ActionType.Wander, cat.AIObject.Action);
+        Assert.Null(cat.Combatant);
+        Assert.True(bird.Alive);
+        Assert.Equal(Direction.West, cat.Direction & Direction.Mask);
+
+        // War mode is the engaged (active) pace. It is faster than the prey's passive flee, which is
+        // what lets the cat run down a fleeing bird (see WildCat_RunsDown_FleeingBird).
+        Assert.True(cat.Warmode);
+    }
+
+    [Fact]
+    public void WildCat_RunsDown_FleeingBird()
     {
         var map = Map.Maps[1];
         Assert.NotNull(map);
@@ -142,10 +166,52 @@ public class AmbientFaunaTests : IDisposable
         var cat = Spawn<Cat>(map, new Point3D(1500, 1600, (sbyte)z));
         var bird = Spawn<Bird>(map, new Point3D(1497, 1600, (sbyte)z)); // 3 tiles: inside pounce range
 
+        var startDist = (int)cat.GetDistanceToSqrt(bird);
+
+        // Drive both AIs by hand, advancing the move clock in small steps so each creature steps on
+        // its own pace (the cat on the active clock, the fleeing bird on the slower passive one).
+        var savedTick = Core._tickCount;
+
+        try
+        {
+            for (var elapsed = 0; elapsed < 30000 && bird.Alive; elapsed += 100)
+            {
+                Core._tickCount += 100;
+                cat.AIObject.Think();
+
+                if (bird.Alive)
+                {
+                    bird.AIObject.Think();
+                }
+            }
+        }
+        finally
+        {
+            Core._tickCount = savedTick;
+        }
+
+        // The active-paced cat either runs the fleeing bird down and kills it in one pounce, or at
+        // the very least closes the gap - the regression this guards against (#12) is the cat never
+        // gaining ground because it moved at the same passive pace as the bird.
+        Assert.True(!bird.Alive || (int)cat.GetDistanceToSqrt(bird) < startDist);
+    }
+
+    [Fact]
+    public void WildCat_OneShotKills_AdjacentPrey()
+    {
+        var map = Map.Maps[1];
+        Assert.NotNull(map);
+        map.GetAverageZ(1500, 1600, out _, out var z, out _);
+
+        var cat = Spawn<Cat>(map, new Point3D(1500, 1600, (sbyte)z));
+        var bird = Spawn<Bird>(map, new Point3D(1499, 1600, (sbyte)z)); // adjacent: the pounce connects
+
         cat.AIObject.DoActionWander();
 
-        Assert.Equal(ActionType.Combat, cat.AIObject.Action);
-        Assert.Equal(bird, cat.Combatant);
+        // A stalk that reaches its prey kills in one blow; the bird dies at once instead of trading
+        // regen against the cat's small melee damage (#12).
+        Assert.False(bird.Alive);
+        Assert.Null(cat.Combatant);
     }
 
     [Fact]
@@ -162,6 +228,7 @@ public class AmbientFaunaTests : IDisposable
 
         Assert.Equal(ActionType.Wander, cat.AIObject.Action);
         Assert.Null(cat.Combatant);
+        Assert.False(cat.Warmode); // only creeping, not sprinting - stays at the calm passive pace
     }
 
     [Fact]
@@ -196,6 +263,25 @@ public class AmbientFaunaTests : IDisposable
         cat.AIObject.DoActionWander();
 
         Assert.NotEqual(bird, cat.Combatant);
+        Assert.True(bird.Alive); // a tamed cat never hunts, so the prey is left unharmed
+    }
+
+    [Fact]
+    public void WildBird_BreaksOffCombat_WithPredator()
+    {
+        var map = Map.Maps[1];
+        Assert.NotNull(map);
+        map.GetAverageZ(1500, 1600, out _, out var z, out _);
+
+        var bird = Spawn<Bird>(map, new Point3D(1500, 1600, (sbyte)z));
+        var cat = Spawn<Cat>(map, new Point3D(1499, 1600, (sbyte)z)); // adjacent predator
+
+        bird.Combatant = cat;
+        bird.AIObject.DoActionCombat();
+
+        // The bird never stands and fights a predator: it drops the fight and flees instead (#12).
+        Assert.Equal(ActionType.Backoff, bird.AIObject.Action);
+        Assert.Null(bird.Combatant);
     }
 
     [Fact]

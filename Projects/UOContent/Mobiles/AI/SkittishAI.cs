@@ -2,8 +2,9 @@ namespace Server.Mobiles;
 
 // A shy animal that keeps its distance. While wild it edges away from any approaching player
 // and from any creature its OppositionGroup marks as an enemy (e.g. a bird fleeing a hunting
-// cat). It still fights back and flees on low health like an ordinary animal if actually
-// attacked; it simply will not let a threat walk up to it unprovoked.
+// cat). It never stands and fights a predator - if combat with one starts it breaks off and
+// flees (#12). Against an ordinary attacker (a player who struck first) it still fights back and
+// flees on low health like any animal; it simply will not let a threat walk up to it unprovoked.
 //
 // Only wild animals are skittish. A tamed one is routed to Obey() by the AITimer and never
 // reaches Think()/DoActionWander, so it behaves exactly like an ordinary pet; the Controlled
@@ -51,6 +52,21 @@ public class SkittishAI : AnimalAI
         // threat drifts back out of alarm range.
         DoMove(Mobile.FocusMob.GetDirectionTo(Mobile));
         return true;
+    }
+
+    // A predator is never traded blows with. If combat starts against an opposition enemy (a cat),
+    // break it off and flee instead of standing to fight (#12). An ordinary attacker - a player
+    // who struck first - still gets the normal animal combat.
+    public override bool DoActionCombat()
+    {
+        if (!Mobile.Controlled && Mobile.OppositionGroup?.IsEnemy(Mobile, Mobile.Combatant) == true)
+        {
+            Mobile.Combatant = null;
+            Action = ActionType.Backoff;
+            return true;
+        }
+
+        return base.DoActionCombat();
     }
 
     // Nearest threat in line of sight: a player within the player-alarm range, or an opposition
